@@ -4,7 +4,7 @@ import (
     "log"
     "net/http"
     "sync"
-
+	 "encoding/json"
     "github.com/gorilla/websocket"
 )
 
@@ -29,10 +29,14 @@ type Server struct {
     unregister chan *Client
     mutex      sync.Mutex
 }
+type Message struct {
+    Signal string `json:"signal"`
+    Word   string `json:"word"`
+}
 
 func NewServer() *Server {
-    return &Server{
-        clients:    make(map[*Client]bool),
+	return &Server{
+		clients:    make(map[*Client]bool),
         broadcast:  make(chan string),
         register:   make(chan *Client),
         unregister: make(chan *Client),
@@ -40,6 +44,16 @@ func NewServer() *Server {
 }
 
 func (s *Server) run() {
+	msg := Message{
+		Signal: "start",
+		Word:   "apple",
+	}
+	msgJson, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("Error marshalling message: %v", err)
+		return
+	}
+
     for {
         select {
         case client := <-s.register:
@@ -53,7 +67,8 @@ func (s *Server) run() {
                 go func() {
                     for client := range s.clients {
                         select {
-                        case client.send <- "start":
+                        // case client.send <- "start":
+                        case client.send <- string(msgJson):
                             log.Printf("Message sent to client: %v", client.conn.RemoteAddr())
                         default:
                             s.mutex.Lock()

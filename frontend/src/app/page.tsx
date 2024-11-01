@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
-import Countdown from './countdown/countdown';
+import {Countdown} from './countdown/countdown';
 
 export default function Home() {
   const [message, setMessage] = useState('待機中...');
   const socketRef = useRef<WebSocket | null>(null);
   const [start, setStart] = useState(false);
-  
+  const [keyword, setKeyword] = useState('');
   useEffect(() => {
     // WebSocket 接続を確立
     const socket = new WebSocket('ws://localhost:8080/ws');
@@ -17,8 +17,11 @@ export default function Home() {
     };
 
     socket.onmessage = (event) => {
+     const data = JSON.parse(event.data);
+        setKeyword(data.word);
+
       console.log('Received message:', event.data);
-      if (event.data === "start") {
+      if (data.signal === "start") {
         setStart(true);
         setMessage('二人のユーザーが接続しました！');
       }
@@ -38,7 +41,7 @@ export default function Home() {
   return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
         {
-            start ? <Countdown />: <div>hogehoge</div>
+            start ? <Countdown keyword ={keyword} />: <div>hogehoge</div>
         }
     </div>
   );

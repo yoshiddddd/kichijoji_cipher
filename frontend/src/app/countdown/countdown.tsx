@@ -1,7 +1,8 @@
 // components/Countdown.js
 import { useState, useEffect } from 'react';
+import { ActionPage } from '../action/action_page';
 
-export default function Countdown() {
+export const Countdown = ({keyword}:{keyword:string}) =>{
   const [count, setCount] = useState(3);
   const [completed, setCompleted] = useState(false);
 
@@ -24,7 +25,7 @@ export default function Countdown() {
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       {completed ? (
         <div>
-          <h1>Countdown Complete!</h1>
+          <ActionPage keyword={keyword} />
         </div>
       ) : (
         <h1>Countdown: {count}</h1>
