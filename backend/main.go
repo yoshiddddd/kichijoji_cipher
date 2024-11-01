@@ -46,7 +46,7 @@ func NewServer() *Server {
 func (s *Server) run() {
 	msg := Message{
 		Signal: "start",
-		Word:   "apple",
+		Word:   "爽健美茶",
 	}
 	msgJson, err := json.Marshal(msg)
 	if err != nil {
