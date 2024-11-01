@@ -48,12 +48,12 @@ func (s *Server) run() {
             log.Printf("Client connected: %v", client.conn.RemoteAddr())
             log.Printf("Number of clients: %v", len(s.clients))
             if len(s.clients) == 2 {
-                log.Printf("Change display")
+                log.Printf("start game")
                 // ブロードキャストメッセージを送信
                 go func() {
                     for client := range s.clients {
                         select {
-                        case client.send <- "change_display":
+                        case client.send <- "start":
                             log.Printf("Message sent to client: %v", client.conn.RemoteAddr())
                         default:
                             s.mutex.Lock()
