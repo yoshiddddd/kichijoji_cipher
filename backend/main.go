@@ -89,7 +89,7 @@ func (s *Server) run() {
                         // クライアントごとにClientIdを設定してメッセージをエンコード
                         msg.ClientId = client.conn.RemoteAddr().String()
 						msg.Signal = "start"
-						msg.Word = "apple"
+						msg.Word = "下北沢"
                         msgJson, err := json.Marshal(msg)
                         if err != nil {
                             log.Printf("Error marshalling message: %v", err)
@@ -199,16 +199,28 @@ func (c *Client) readPump(s *Server) {
             log.Printf("Game set")
 			count = 0
 			log.Printf("Answers: %v", s.answers)
-			err := sendToDify(s.answers)
-			if err != nil {
-				log.Printf("Error sending data to Dify: %v", err)
-			}
+
+			answers := s.answers // 回答を一時的な変数に保存
+			s.answers = nil       // リセット
+			go func(answers []AnswerMessage) {
+				err := sendToDify(answers)
+				if err != nil {
+					log.Printf("Error sending data to Dify: %v", err)
+				}
+			}(answers)
+			return ;
+
+
+			// err := sendToDify(s.answers)
+			// if err != nil {
+			// 	log.Printf("Error sending data to Dify: %v", err)
+			// }
         }
         countLock.Unlock()
     }
 }
 func sendToDify(data []AnswerMessage) error {
-	token :="app-iEHIHbKk9exa7pkrPTnAdBIW"
+	token :="app-2FxWnRThx5ju4Wd6kMiXAIjd"
 	query := fmt.Sprintf("keyword: %s client(%s) Answer: %s client(%s) Answer: %s",
 	data[0].Keyword, data[0].ClientId, data[0].Answer, data[1].ClientId, data[1].Answer)
 	payload := DifyRequestPayload{
@@ -254,6 +266,7 @@ func sendToDify(data []AnswerMessage) error {
     }
 
     log.Println("Successfully sent data to Dify")
+    log.Println(resp.Body)
     return nil
 }
 
