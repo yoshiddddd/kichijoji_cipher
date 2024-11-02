@@ -5,6 +5,8 @@ import (
     "net/http"
     "sync"
 	 "encoding/json"
+	 "fmt"
+	  "bytes"
     "github.com/gorilla/websocket"
 )
 
@@ -28,21 +30,40 @@ type Server struct {
     register   chan *Client
     unregister chan *Client
     mutex      sync.Mutex
+	answers []AnswerMessage
 }
 type Message struct {
     Signal string `json:"signal"`
     Word   string `json:"word"`
 }
-
+type AnswerMessage struct {
+	ClientId string `json:"clientId"`
+	Answer string `json:"answer"`
+	Keyword string `json:"keyword"`
+}
 func NewServer() *Server {
 	return &Server{
 		clients:    make(map[*Client]bool),
         broadcast:  make(chan string),
         register:   make(chan *Client),
         unregister: make(chan *Client),
+		answers: make([]AnswerMessage, 0, 2),
     }
 }
+type DifyRequestPayload struct {
+    Inputs         map[string]interface{} `json:"inputs"`
+    Query          string                 `json:"query"`
+    ResponseMode   string                 `json:"response_mode"`
+    ConversationID string                 `json:"conversation_id"`
+    User           string                 `json:"user"`
+    Files          []File                 `json:"files"`
+}
 
+type File struct {
+    Type           string `json:"type"`
+    TransferMethod string `json:"transfer_method"`
+    URL            string `json:"url"`
+}
 func (s *Server) run() {
 	type Message struct {
 		ClientId string `json:"clientId"`
@@ -154,6 +175,9 @@ func (c *Client) readPump(s *Server) {
     }()
     for {
         _, message, err := c.conn.ReadMessage()
+		var sendMessage AnswerMessage
+		err = json.Unmarshal(message, &sendMessage)
+		// log.Printf("Received message: %+v", sendMessage.ClientId)
         if err != nil {
             if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
                 log.Printf("Error reading message: %v", err)
@@ -162,6 +186,7 @@ func (c *Client) readPump(s *Server) {
         }
         if message != nil {
             countLock.Lock()
+			s.answers = append(s.answers, sendMessage)
             count++
             log.Println("Current user count:", count)
             countLock.Unlock()
@@ -169,11 +194,67 @@ func (c *Client) readPump(s *Server) {
         log.Printf("Received message from client: %s", message)
 
         countLock.Lock()
-        if count == 2 {
+        // if count == 2 {
+		if len(s.answers) == 2 {
             log.Printf("Game set")
+			count = 0
+			log.Printf("Answers: %v", s.answers)
+			err := sendToDify(s.answers)
+			if err != nil {
+				log.Printf("Error sending data to Dify: %v", err)
+			}
         }
         countLock.Unlock()
     }
+}
+func sendToDify(data []AnswerMessage) error {
+	token :="app-iEHIHbKk9exa7pkrPTnAdBIW"
+	query := fmt.Sprintf("keyword: %s client(%s) Answer: %s client(%s) Answer: %s",
+	data[0].Keyword, data[0].ClientId, data[0].Answer, data[1].ClientId, data[1].Answer)
+	payload := DifyRequestPayload{
+        Inputs:         map[string]interface{}{}, // 必要ならば `inputs` の詳細を設定
+        Query:          query,
+        ResponseMode:   "streaming",
+        ConversationID: "",         // 必要に応じて設定
+        User:           "abc-123",  // 必要に応じて設定
+        Files: []File{
+            {
+                Type:           "image",
+                TransferMethod: "remote_url",
+                URL:            "https://cloud.dify.ai/logo/logo-site.png",
+            },
+        },
+    }
+
+	requestBody, err := json.Marshal(payload)
+	// requestBody, err := json.Marshal(data)
+    if err != nil {
+        return fmt.Errorf("error encoding data to JSON: %v", err)
+    }
+
+    req, err := http.NewRequest("POST", "https://api.dify.ai/v1/chat-messages", bytes.NewBuffer(requestBody))
+    if err != nil {
+        return fmt.Errorf("error creating HTTP request: %v", err)
+    }
+
+    // Authorizationヘッダーにトークンを設定
+    req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+    req.Header.Set("Content-Type", "application/json")
+
+    // リクエストの送信
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return fmt.Errorf("error sending request to Dify: %v", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("failed to send data to Dify, status code: %d", resp.StatusCode)
+    }
+
+    log.Println("Successfully sent data to Dify")
+    return nil
 }
 
 func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
