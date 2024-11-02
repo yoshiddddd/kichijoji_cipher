@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { ActionPage } from '../action/action_page';
 
-export const Countdown = ({keyword, socket}:{keyword:string,socket:WebSocket|null}) =>{
+export const Countdown = ({keyword, socket, clientId}:{keyword:string,socket:WebSocket|null,clientId:string}) =>{
   const [count, setCount] = useState(3);
   const [completed, setCompleted] = useState(false);
 
@@ -25,7 +25,7 @@ export const Countdown = ({keyword, socket}:{keyword:string,socket:WebSocket|nul
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       {completed ? (
         <div>
-          <ActionPage keyword={keyword} socket={socket}/>
+          <ActionPage keyword={keyword} socket={socket} clientId={clientId}/>
         </div>
       ) : (
         <h1>Countdown: {count}</h1>

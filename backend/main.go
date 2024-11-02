@@ -44,16 +44,12 @@ func NewServer() *Server {
 }
 
 func (s *Server) run() {
-	msg := Message{
-		Signal: "start",
-		Word:   "爽健美茶",
+	type Message struct {
+		ClientId string `json:"clientId"`
+		Signal   string `json:"signal"`
+		Word     string `json:"word"`
 	}
-	msgJson, err := json.Marshal(msg)
-	if err != nil {
-		log.Printf("Error marshalling message: %v", err)
-		return
-	}
-
+	var msg Message 
     for {
         select {
         case client := <-s.register:
@@ -61,13 +57,26 @@ func (s *Server) run() {
             s.clients[client] = true
             log.Printf("Client connected: %v", client.conn.RemoteAddr())
             log.Printf("Number of clients: %v", len(s.clients))
+            
+            // 2人のクライアントが接続されたらゲーム開始
             if len(s.clients) == 2 {
-                log.Printf("start game")
-                // ブロードキャストメッセージを送信
+                log.Printf("Start game")
+                
+                // 各クライアントにメッセージを送信
                 go func() {
                     for client := range s.clients {
+                        // クライアントごとにClientIdを設定してメッセージをエンコード
+                        msg.ClientId = client.conn.RemoteAddr().String()
+						msg.Signal = "start"
+						msg.Word = "apple"
+                        msgJson, err := json.Marshal(msg)
+                        if err != nil {
+                            log.Printf("Error marshalling message: %v", err)
+                            continue
+                        }
+
+                        // メッセージをクライアントに送信
                         select {
-                        // case client.send <- "start":
                         case client.send <- string(msgJson):
                             log.Printf("Message sent to client: %v", client.conn.RemoteAddr())
                         default:
@@ -110,6 +119,7 @@ func (s *Server) run() {
     }
 }
 
+
 func (c *Client) writePump() {
     defer func() {
         c.conn.Close()
@@ -131,12 +141,17 @@ func (c *Client) writePump() {
     }
 }
 
+type userCount int
+
+var (
+    count     userCount
+    countLock sync.Mutex // 排他制御用のMutex
+)
 func (c *Client) readPump(s *Server) {
     defer func() {
-        s.unregister <- c
+		s.unregister <- c
         c.conn.Close()
     }()
-
     for {
         _, message, err := c.conn.ReadMessage()
         if err != nil {
@@ -145,8 +160,19 @@ func (c *Client) readPump(s *Server) {
             }
             break
         }
+        if message != nil {
+            countLock.Lock()
+            count++
+            log.Println("Current user count:", count)
+            countLock.Unlock()
+        }
         log.Printf("Received message from client: %s", message)
-        // 必要に応じてメッセージを処理
+
+        countLock.Lock()
+        if count == 2 {
+            log.Printf("Game set")
+        }
+        countLock.Unlock()
     }
 }
 
