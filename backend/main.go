@@ -8,6 +8,7 @@ import (
 	 "fmt"
 	  "bytes"
 	  "io"
+	  "os"
     "github.com/gorilla/websocket"
 )
 
@@ -39,6 +40,7 @@ type Message struct {
 }
 type AnswerMessage struct {
 	ClientId string `json:"clientId"`
+	Name string `json:"name"`
 	Answer string `json:"answer"`
 	Keyword string `json:"keyword"`
 }
@@ -197,13 +199,19 @@ func (c *Client) readPump(s *Server) {
         countLock.Lock()
         // if count == 2 {
 		if len(s.answers) == 2 {
+			for client := range s.clients {
+				client.send <- "end"
+			}
             log.Printf("Game set")
 			count = 0
 			log.Printf("Answers: %v", s.answers)
-			err := sendToDify(s.answers)
+			answer ,err := sendToDify(s.answers)
 			if err != nil {
 				log.Printf("Error sending data to Dify: %v", err)
 			}
+			log.Printf("Answer from Dify: %s", answer)
+
+			s.answers = nil
         }
         countLock.Unlock()
     }
@@ -211,10 +219,12 @@ func (c *Client) readPump(s *Server) {
 type DifyResponse struct {
     Answer string `json:"answer"`
 }
-func sendToDify(data []AnswerMessage) error {
-	token :="app-2FxWnRThx5ju4Wd6kMiXAIjd"
-	query := fmt.Sprintf("keyword: %s client(%s) Answer: %s client(%s) Answer: %s",
-	data[0].Keyword, data[0].ClientId, data[0].Answer, data[1].ClientId, data[1].Answer)
+func sendToDify(data []AnswerMessage) (string, error) {
+
+	token :=os.Getenv("DIFY_APIKEY")
+	//送信するクエリの内容はここ
+	query := fmt.Sprintf("keyword: %s name(%s) Answer: %s, name(%s) Answer: %s",
+	data[0].Keyword, data[0].Name, data[0].Answer, data[1].Name, data[1].Answer)
 	payload := DifyRequestPayload{
         Inputs:         map[string]interface{}{}, 
         Query:          query,
@@ -233,12 +243,12 @@ func sendToDify(data []AnswerMessage) error {
 	requestBody, err := json.Marshal(payload)
 	// requestBody, err := json.Marshal(data)
     if err != nil {
-        return fmt.Errorf("error encoding data to JSON: %v", err)
+        return "",fmt.Errorf("error encoding data to JSON: %v", err)
     }
 
     req, err := http.NewRequest("POST", "https://api.dify.ai/v1/chat-messages", bytes.NewBuffer(requestBody))
     if err != nil {
-        return fmt.Errorf("error creating HTTP request: %v", err)
+        return "",fmt.Errorf("error creating HTTP request: %v", err)
     }
 
     // Authorizationヘッダーにトークンを設定
@@ -249,25 +259,24 @@ func sendToDify(data []AnswerMessage) error {
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-        return fmt.Errorf("error sending request to Dify: %v", err)
+        return "",fmt.Errorf("error sending request to Dify: %v", err)
     }
     defer resp.Body.Close()
 
     if resp.StatusCode != http.StatusOK {
-        return fmt.Errorf("failed to send data to Dify, status code: %d", resp.StatusCode)
+        return "",fmt.Errorf("failed to send data to Dify, status code: %d", resp.StatusCode)
     }
     body, err := io.ReadAll(resp.Body)
     if err != nil {
-        return fmt.Errorf("error reading response body: %v", err)
+        return "",fmt.Errorf("error reading response body: %v", err)
     }
 	var difyResponse DifyResponse
     if err := json.Unmarshal(body, &difyResponse); err != nil {
-        return fmt.Errorf("error unmarshalling response: %v", err)
+        return "",fmt.Errorf("error unmarshalling response: %v", err)
     }
 
     // `answer`フィールドの確認とログ出力
-    log.Printf("Answer from Dify: %s", difyResponse.Answer)
-    return nil
+    return  difyResponse.Answer,nil
 }
 
 func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
