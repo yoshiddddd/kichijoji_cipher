@@ -70,27 +70,27 @@ type File struct {
     TransferMethod string `json:"transfer_method"`
     URL            string `json:"url"`
 }
+type ClientSendMessage struct {
+	ClientId string `json:"clientId"`
+	Signal   string `json:"signal"`
+	Word     string `json:"word"`
+}
+//GPTに書かせた
 func randomWordGenerate() string {
     words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック"}
     
     // シード値を設定
     rand.Seed(time.Now().UnixNano())
-    
     // 配列からランダムに単語を選択
     randomIndex := rand.Intn(len(words))
     return words[randomIndex]
 }
+
 func (s *Server) run() {
-	type Message struct {
-		ClientId string `json:"clientId"`
-		Signal   string `json:"signal"`
-		Word     string `json:"word"`
-	}
-	var msg Message 
+	var msg ClientSendMessage 
     for {
-		sendKeyword := randomWordGenerate()
-        select {
-        case client := <-s.register:
+		select {
+		case client := <-s.register:
             s.mutex.Lock()
             s.clients[client] = true
             log.Printf("Client connected: %v", client.conn.RemoteAddr())
@@ -98,7 +98,8 @@ func (s *Server) run() {
             
             // 2人のクライアントが接続されたらゲーム開始
             if len(s.clients) == 2 {
-                log.Printf("Start game")
+				log.Printf("Start game")
+				sendKeyword := randomWordGenerate()
                 
                 // 各クライアントにメッセージを送信
                 go func() {
@@ -190,12 +191,7 @@ func (c *Client) readPump(s *Server) {
 		s.unregister <- c
         c.conn.Close()
     }()
-	type endMessage struct {
-		ClientId string `json:"clientId"`
-		Signal   string `json:"signal"`
-		Word     string `json:"word"`
-	}
-	var msg endMessage
+	var msg ClientSendMessage
     for {
         _, message, err := c.conn.ReadMessage()
 		var sendMessage AnswerMessage
@@ -298,7 +294,6 @@ func sendToDify(data []AnswerMessage) (string, error) {
         return "",fmt.Errorf("error creating HTTP request: %v", err)
     }
 
-    // Authorizationヘッダーにトークンを設定
     req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
     req.Header.Set("Content-Type", "application/json")
 
