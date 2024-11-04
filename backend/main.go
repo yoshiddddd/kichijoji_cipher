@@ -9,6 +9,9 @@ import (
 	  "bytes"
 	  "io"
 	  "os"
+	  "github.com/joho/godotenv"
+	  "math/rand"
+	  "time"
     "github.com/gorilla/websocket"
 )
 
@@ -67,6 +70,16 @@ type File struct {
     TransferMethod string `json:"transfer_method"`
     URL            string `json:"url"`
 }
+func randomWordGenerate() string {
+    words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック"}
+    
+    // シード値を設定
+    rand.Seed(time.Now().UnixNano())
+    
+    // 配列からランダムに単語を選択
+    randomIndex := rand.Intn(len(words))
+    return words[randomIndex]
+}
 func (s *Server) run() {
 	type Message struct {
 		ClientId string `json:"clientId"`
@@ -75,6 +88,7 @@ func (s *Server) run() {
 	}
 	var msg Message 
     for {
+		sendKeyword := randomWordGenerate()
         select {
         case client := <-s.register:
             s.mutex.Lock()
@@ -92,7 +106,7 @@ func (s *Server) run() {
                         // クライアントごとにClientIdを設定してメッセージをエンコード
                         msg.ClientId = client.conn.RemoteAddr().String()
 						msg.Signal = "start"
-						msg.Word = "下北沢"
+						msg.Word = sendKeyword
                         msgJson, err := json.Marshal(msg)
                         if err != nil {
                             log.Printf("Error marshalling message: %v", err)
@@ -176,6 +190,12 @@ func (c *Client) readPump(s *Server) {
 		s.unregister <- c
         c.conn.Close()
     }()
+	type endMessage struct {
+		ClientId string `json:"clientId"`
+		Signal   string `json:"signal"`
+		Word     string `json:"word"`
+	}
+	var msg endMessage
     for {
         _, message, err := c.conn.ReadMessage()
 		var sendMessage AnswerMessage
@@ -200,7 +220,16 @@ func (c *Client) readPump(s *Server) {
         // if count == 2 {
 		if len(s.answers) == 2 {
 			for client := range s.clients {
-				client.send <- "end"
+				msg.ClientId = client.conn.RemoteAddr().String()
+				msg.Signal = "end"
+				msg.Word = "AIが答えを出力中です"
+				msgJson, err := json.Marshal(msg)
+				if err != nil {
+					log.Printf("Error marshalling message: %v", err)
+					continue
+				}
+				client.send <- string(msgJson)
+
 			}
             log.Printf("Game set")
 			count = 0
@@ -210,7 +239,21 @@ func (c *Client) readPump(s *Server) {
 				log.Printf("Error sending data to Dify: %v", err)
 			}
 			log.Printf("Answer from Dify: %s", answer)
-
+			for client := range s.clients {
+				msg.ClientId = client.conn.RemoteAddr().String()
+				msg.Signal = "result"
+				msg.Word = answer
+				msgJson, err := json.Marshal(msg)
+				if err != nil {
+					log.Printf("Error marshalling message: %v", err)
+					continue
+				}
+				client.send <- string(msgJson)
+			}
+			// for client := range s.clients {
+			// 	close(client.send)       // sendチャネルを閉じる
+			// 	delete(s.clients, client) 			// クライアントを削除
+			// }
 			s.answers = nil
         }
         countLock.Unlock()
@@ -220,8 +263,12 @@ type DifyResponse struct {
     Answer string `json:"answer"`
 }
 func sendToDify(data []AnswerMessage) (string, error) {
-
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf(".envファイルの読み込みに失敗しました: %v", err)
+	}
 	token :=os.Getenv("DIFY_APIKEY")
+	fmt.Println(token)
 	//送信するクエリの内容はここ
 	query := fmt.Sprintf("keyword: %s name(%s) Answer: %s, name(%s) Answer: %s",
 	data[0].Keyword, data[0].Name, data[0].Answer, data[1].Name, data[1].Answer)

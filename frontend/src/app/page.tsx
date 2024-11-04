@@ -11,7 +11,8 @@ export default function Home() {
   const [clientId, setClientId] = useState('');
   const [isGameStarted, setIsGameStarted] = useState(false); 
   const [name, setName] = useState('');
-
+    const [thinking, setThinking] = useState(false);
+    const [result, setResult] = useState(false);
   const handleStartGame = () => {
     // WebSocket 接続を確立
     if (!name) {
@@ -40,6 +41,14 @@ export default function Home() {
         setStart(true);
         setMessage('二人のユーザーが接続しました！ゲーム開始！');
       }
+      if (data.signal ==="end"){
+        setThinking(true);
+      }
+      if(data.signal === "result"){
+        setThinking(false);
+        setResult(true);
+        newSocket.close();
+      }
     };
 
     newSocket.onclose = () => {
@@ -58,25 +67,32 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      {
-        start 
-          ? <Countdown keyword={keyword} socket={socket} name={name} clientId={clientId} />
-          : <div>
-              <p>{message}</p>
-              {!isGameStarted && (
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                <button onClick={handleStartGame}>ゲームを開始</button>
-                </div>
-              )}
-            </div>
-      }
+<div style={{ textAlign: 'center', marginTop: '50px' }}>
+  {thinking ? (
+    <h1>AIがジャッジしています...</h1>
+  ) : result ? <div>
+    <h1>結果発表</h1>
+    <h2>{keyword}</h2>
     </div>
+  : ( 
+    start 
+      ? <Countdown keyword={keyword} socket={socket} name={name} clientId={clientId} />
+      : <div>
+          <p>{message}</p>
+          {!isGameStarted && (
+            <div>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <button onClick={handleStartGame}>ゲームを開始</button>
+            </div>
+          )}
+        </div>
+  )}
+</div>
+
   );
 }

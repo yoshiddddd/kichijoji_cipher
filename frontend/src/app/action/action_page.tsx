@@ -7,7 +7,6 @@ export const ActionPage = ({keyword,socket,name,clientId}:{keyword:string,socket
         setIsAnswered(true);
         if (socket && socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify({clientId, name, answer, keyword }));
-            setAnswer(''); // 入力フィールドをリセット
           } else {
             console.error('WebSocket is not connected');
           }
