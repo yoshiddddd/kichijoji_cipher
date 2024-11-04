@@ -140,19 +140,19 @@ func (s *Server) run() {
             }
             s.mutex.Unlock()
 
-        case message := <-s.broadcast:
-            log.Printf("Broadcasting message: %v", message)
-            s.mutex.Lock()
-            for client := range s.clients {
-                select {
-                case client.send <- message:
-                    log.Printf("Broadcast message sent to client: %v", client.conn.RemoteAddr())
-                default:
-                    delete(s.clients, client)
-                    close(client.send)
-                    log.Printf("Failed to broadcast message to client: %v", client.conn.RemoteAddr())
-                }
-            }
+        // case message := <-s.broadcast:
+        //     log.Printf("Broadcasting message: %v", message)
+        //     s.mutex.Lock()
+        //     for client := range s.clients {
+        //         select {
+        //         case client.send <- message:
+        //             log.Printf("Broadcast message sent to client: %v", client.conn.RemoteAddr())
+        //         default:
+        //             delete(s.clients, client)
+        //             close(client.send)
+        //             log.Printf("Failed to broadcast message to client: %v", client.conn.RemoteAddr())
+        //         }
+        //     }
             s.mutex.Unlock()
         }
     }
@@ -246,10 +246,6 @@ func (c *Client) readPump(s *Server) {
 				}
 				client.send <- string(msgJson)
 			}
-			// for client := range s.clients {
-			// 	close(client.send)       // sendチャネルを閉じる
-			// 	delete(s.clients, client) 			// クライアントを削除
-			// }
 			s.answers = nil
         }
         countLock.Unlock()

@@ -23,8 +23,7 @@ export default function Home() {
     setSocket(newSocket);
     socketRef.current = newSocket;
 
-    setIsGameStarted(true); // ボタンを消すために状態を更新
-
+    setIsGameStarted(true); 
     newSocket.onopen = () => {
       console.log('Connected to server');
       setMessage('ユーザーを探しています...');
