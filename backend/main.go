@@ -30,6 +30,7 @@ type Client struct {
 }
 
 type Server struct {
+	
     clients    map[*Client]bool
     broadcast  chan string
     register   chan *Client
@@ -77,7 +78,7 @@ type ClientSendMessage struct {
 }
 //GPTに書かせた
 func randomWordGenerate() string {
-    words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック"}
+    words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック",}
     
     // シード値を設定
     rand.Seed(time.Now().UnixNano())
@@ -140,19 +141,19 @@ func (s *Server) run() {
             }
             s.mutex.Unlock()
 
-        // case message := <-s.broadcast:
-        //     log.Printf("Broadcasting message: %v", message)
-        //     s.mutex.Lock()
-        //     for client := range s.clients {
-        //         select {
-        //         case client.send <- message:
-        //             log.Printf("Broadcast message sent to client: %v", client.conn.RemoteAddr())
-        //         default:
-        //             delete(s.clients, client)
-        //             close(client.send)
-        //             log.Printf("Failed to broadcast message to client: %v", client.conn.RemoteAddr())
-        //         }
-        //     }
+        case message := <-s.broadcast:
+            log.Printf("Broadcasting message: %v", message)
+            s.mutex.Lock()
+            for client := range s.clients {
+                select {
+                case client.send <- message:
+                    log.Printf("Broadcast message sent to client: %v", client.conn.RemoteAddr())
+                default:
+                    delete(s.clients, client)
+                    close(client.send)
+                    log.Printf("Failed to broadcast message to client: %v", client.conn.RemoteAddr())
+                }
+            }
             s.mutex.Unlock()
         }
     }
@@ -225,7 +226,6 @@ func (c *Client) readPump(s *Server) {
 					continue
 				}
 				client.send <- string(msgJson)
-
 			}
             log.Printf("Game set")
 			count = 0
