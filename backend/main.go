@@ -24,30 +24,6 @@ var upgrader = websocket.Upgrader{
     },
 }
 
-type Client struct {
-    conn *websocket.Conn
-    send chan string
-}
-
-type Server struct {
-
-    clients    map[*Client]bool
-    broadcast  chan string
-    register   chan *Client
-    unregister chan *Client
-    mutex      sync.Mutex
-	answers []AnswerMessage
-}
-type Message struct {
-    Signal string `json:"signal"`
-    Word   string `json:"word"`
-}
-type AnswerMessage struct {
-	ClientId string `json:"clientId"`
-	Name string `json:"name"`
-	Answer string `json:"answer"`
-	Keyword string `json:"keyword"`
-}
 func NewServer() *Server {
 	return &Server{
 		clients:    make(map[*Client]bool),
@@ -57,25 +33,7 @@ func NewServer() *Server {
 		answers: make([]AnswerMessage, 0, 2),
     }
 }
-type DifyRequestPayload struct {
-    Inputs         map[string]interface{} `json:"inputs"`
-    Query          string                 `json:"query"`
-    ResponseMode   string                 `json:"response_mode"`
-    ConversationID string                 `json:"conversation_id"`
-    User           string                 `json:"user"`
-    Files          []File                 `json:"files"`
-}
 
-type File struct {
-    Type           string `json:"type"`
-    TransferMethod string `json:"transfer_method"`
-    URL            string `json:"url"`
-}
-type ClientSendMessage struct {
-	ClientId string `json:"clientId"`
-	Signal   string `json:"signal"`
-	Word     string `json:"word"`
-}
 //GPTに書かせた
 func randomWordGenerate() string {
     words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック","スマートフォン","ノートパソコン","ワイヤレスイヤホン","ワイヤレスマウス","ワイヤレスキーボード"}
@@ -181,7 +139,7 @@ func (c *Client) writePump() {
     }
 }
 
-type userCount int
+
 
 var (
     count     userCount
@@ -193,6 +151,7 @@ func (c *Client) readPump(s *Server) {
         c.conn.Close()
     }()
 	var msg ClientSendMessage
+	var resultmsg ResultSendMessage
     for {
         _, message, err := c.conn.ReadMessage()
 		var sendMessage AnswerMessage
@@ -236,9 +195,10 @@ func (c *Client) readPump(s *Server) {
 			}
 			log.Printf("Answer from Dify: %s", answer)
 			for client := range s.clients {
-				msg.ClientId = client.conn.RemoteAddr().String()
-				msg.Signal = "result"
-				msg.Word = answer
+				resultmsg.ClientId = client.conn.RemoteAddr().String()
+				resultmsg.Signal = "result"
+				resultmsg.Word = answer
+				
 				msgJson, err := json.Marshal(msg)
 				if err != nil {
 					log.Printf("Error marshalling message: %v", err)
@@ -250,9 +210,6 @@ func (c *Client) readPump(s *Server) {
         }
         countLock.Unlock()
     }
-}
-type DifyResponse struct {
-    Answer string `json:"answer"`
 }
 func sendToDify(data []AnswerMessage) (string, error) {
 	err := godotenv.Load()
