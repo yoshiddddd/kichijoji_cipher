@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { Countdown } from './countdown/countdown';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [message, setMessage] = useState('ゲームを開始してください');
@@ -13,6 +14,7 @@ export default function Home() {
   const [name, setName] = useState('');
     const [thinking, setThinking] = useState(false);
     const [result, setResult] = useState(false);
+    const router = useRouter();
   const handleStartGame = () => {
     // WebSocket 接続を確立
     if (!name) {
@@ -56,6 +58,9 @@ export default function Home() {
     };
   };
 
+  const handleReset = () => {
+    window.location.reload();
+  };
   useEffect(() => {
     // クリーンアップ: コンポーネントのアンマウント時にWebSocket接続を閉じる
     return () => {
@@ -72,6 +77,7 @@ export default function Home() {
   ) : result ? <div>
     <h1>結果発表</h1>
     <h2>{keyword}</h2>
+    <button onClick={handleReset}>もう一度プレイ</button>
     </div>
   : ( 
     start 

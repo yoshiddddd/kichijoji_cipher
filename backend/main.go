@@ -30,7 +30,7 @@ type Client struct {
 }
 
 type Server struct {
-	
+
     clients    map[*Client]bool
     broadcast  chan string
     register   chan *Client
@@ -78,7 +78,7 @@ type ClientSendMessage struct {
 }
 //GPTに書かせた
 func randomWordGenerate() string {
-    words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック",}
+    words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック","スマートフォン","ノートパソコン","ワイヤレスイヤホン","ワイヤレスマウス","ワイヤレスキーボード"}
     
     // シード値を設定
     rand.Seed(time.Now().UnixNano())
