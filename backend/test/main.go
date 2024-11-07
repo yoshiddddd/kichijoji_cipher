@@ -36,7 +36,7 @@ func sendToDify(data []AnswerMessage) error {
         Query:          query,
         ResponseMode:   "blocking",
         ConversationID: "",         // 必要に応じて設定
-        User:           "abc-123",  // 必要に応じて設定
+        User:           "kyoshida",  // 必要に応じて設定
         Files: []File{
             {
                 Type:           "image",
