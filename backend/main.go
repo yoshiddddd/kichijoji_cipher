@@ -72,15 +72,15 @@ func (s *Server) run() {
                             log.Printf("Error marshalling message: %v", err)
                             continue
                         }
-
+						
                         // メッセージをクライアントに送信
                         select {
                         case client.send <- string(msgJson):
                             log.Printf("Message sent to client: %v", client.conn.RemoteAddr())
                         default:
                             s.mutex.Lock()
-                            delete(s.clients, client)
-                            close(client.send)
+								delete(s.clients, client)
+								close(client.send)
                             s.mutex.Unlock()
                             log.Printf("Failed to send message to client: %v", client.conn.RemoteAddr())
                         }
@@ -139,8 +139,6 @@ func (c *Client) writePump() {
     }
 }
 
-
-
 var (
     count     userCount
     countLock sync.Mutex // 排他制御用のMutex
@@ -198,8 +196,7 @@ func (c *Client) readPump(s *Server) {
 				resultmsg.ClientId = client.conn.RemoteAddr().String()
 				resultmsg.Signal = "result"
 				resultmsg.Word = answer
-				
-				msgJson, err := json.Marshal(msg)
+				msgJson, err := json.Marshal(resultmsg)
 				if err != nil {
 					log.Printf("Error marshalling message: %v", err)
 					continue
@@ -221,6 +218,7 @@ func sendToDify(data []AnswerMessage) (string, error) {
 	//送信するクエリの内容はここ
 	query := fmt.Sprintf("keyword: %s name(%s) Answer: %s, name(%s) Answer: %s",
 	data[0].Keyword, data[0].Name, data[0].Answer, data[1].Name, data[1].Answer)
+
 	payload := DifyRequestPayload{
         Inputs:         map[string]interface{}{}, 
         Query:          query,
@@ -246,10 +244,8 @@ func sendToDify(data []AnswerMessage) (string, error) {
     if err != nil {
         return "",fmt.Errorf("error creating HTTP request: %v", err)
     }
-
     req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
     req.Header.Set("Content-Type", "application/json")
-
     // リクエストの送信
     client := &http.Client{}
     resp, err := client.Do(req)
