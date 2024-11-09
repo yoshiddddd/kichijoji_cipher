@@ -15,7 +15,7 @@ func (s *Server) handleRegister(client *Client) {
     log.Printf("Number of clients: %v", len(s.clients))
 
     // 2人のクライアントが接続されたらゲーム開始
-    if len(s.clients) == 2 {
+    if len(s.clients) == s.expectedAnswerCount {
         log.Printf("Start game")
         s.startGame()
     }
