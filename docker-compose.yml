@@ -1,4 +1,7 @@
-version: '3'
+version: '3.8'
+
+volumes:
+  node-modules:
 
 services:
   backend:
@@ -14,5 +17,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    environment:
+      - WATCHPACK_POLLING=true
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - node-modules:/app/node_modules
