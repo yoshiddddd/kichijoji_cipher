@@ -3,10 +3,8 @@ package main
 import (
     "log"
     "net/http"
-    "sync"
+    // "sync"
 	 "encoding/json"
-	  "math/rand"
-	  "time"
     "github.com/gorilla/websocket"
 )
 
@@ -17,27 +15,6 @@ var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
         return true
     },
-}
-
-func NewServer() *Server {
-	return &Server{
-		clients:    make(map[*Client]bool),
-        broadcast:  make(chan string),
-        register:   make(chan *Client),
-        unregister: make(chan *Client),
-		answers: make([]AnswerMessage, 0, 2),
-    }
-}
-
-//GPTに書かせた
-func randomWordGenerate() string {
-    words := []string{"下北沢", "ヘッドフォン", "データベース", "マックブック","スマートフォン","ノートパソコン","ワイヤレスイヤホン","ワイヤレスマウス","ワイヤレスキーボード"}
-    
-    // シード値を設定
-    rand.Seed(time.Now().UnixNano())
-    // 配列からランダムに単語を選択
-    randomIndex := rand.Intn(len(words))
-    return words[randomIndex]
 }
 
 func (s *Server) run() {
@@ -112,97 +89,74 @@ func (s *Server) run() {
     }
 }
 
+func (s *Server) handleMessage(c *Client, message []byte) {
+    var sendMessage AnswerMessage
+    err := json.Unmarshal(message, &sendMessage)
+    if err != nil {
+        log.Printf("Error unmarshalling message: %v", err)
+        return
+    }
 
-func (c *Client) writePump() {
-    defer func() {
-        c.conn.Close()
-    }()
+    // ロックを取得して共有リソースを操作
+    s.mutex.Lock()
+    defer s.mutex.Unlock()
 
-    for {
-        message, ok := <-c.send
-        if !ok {
-            // チャネルが閉じられている
-            c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-            return
-        }
+    // 回答を追加
+    s.answers = append(s.answers, sendMessage)
+    log.Printf("Received message from client %s: %s", c.conn.RemoteAddr().String(), message)
 
-        err := c.conn.WriteMessage(websocket.TextMessage, []byte(message))
-        if err != nil {
-            log.Printf("Error writing message: %v", err)
-            return
+    // すべての回答が揃ったかチェック
+    if len(s.answers) >= s.expectedAnswerCount {
+        // 回答が揃った場合の処理を別の関数で行う
+        s.processAnswers()
+    }
+}
+func (s *Server) processAnswers() {
+    // クライアントに "end" シグナルを送信
+    s.broadcastToClients(ClientSendMessage{
+        Signal: "end",
+        Word:   "AIが答えを出力中です",
+    })
+
+    log.Printf("Game set")
+    log.Printf("Answers: %v", s.answers)
+
+    // AIへのリクエストを行う
+    answer, err := sendToDify(s.answers)
+    if err != nil {
+        log.Printf("Error sending data to Dify: %v", err)
+        return
+    }
+    log.Printf("Answer from Dify: %s", answer)
+
+    // クライアントに結果を送信
+    s.broadcastToClients(ResultSendMessage{
+        Signal: "result",
+        Word:   answer,
+    })
+
+    // 回答リストをクリア
+    s.answers = nil
+}
+func (s *Server) broadcastToClients(message interface{}) {
+    msgJson, err := json.Marshal(message)
+    if err != nil {
+        log.Printf("Error marshalling message: %v", err)
+        return
+    }
+
+    for client := range s.clients {
+        select {
+        case client.send <- string(msgJson):
+            // 送信成功
+        default:
+            // 送信失敗（チャネルが詰まっている場合など）
+            close(client.send)
+            delete(s.clients, client)
         }
     }
 }
 
-var (
-    count     userCount
-    countLock sync.Mutex // 排他制御用のMutex
-)
-func (c *Client) readPump(s *Server) {
-    defer func() {
-		s.unregister <- c
-        c.conn.Close()
-    }()
-	var msg ClientSendMessage
-	var resultmsg ResultSendMessage
-    for {
-        _, message, err := c.conn.ReadMessage()
-		var sendMessage AnswerMessage
-		err = json.Unmarshal(message, &sendMessage)
-		// log.Printf("Received message: %+v", sendMessage.ClientId)
-        if err != nil {
-            if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-                log.Printf("Error reading message: %v", err)
-            }
-            break
-        }
-        if message != nil {
-            countLock.Lock()
-			s.answers = append(s.answers, sendMessage)
-            count++
-            log.Println("Current user count:", count)
-            countLock.Unlock()
-        }
-        log.Printf("Received message from client: %s", message)
-
-        countLock.Lock()
-        // if count == 2 {
-		if len(s.answers) == 2 {
-			for client := range s.clients {
-				msg.ClientId = client.conn.RemoteAddr().String()
-				msg.Signal = "end"
-				msg.Word = "AIが答えを出力中です"
-				msgJson, err := json.Marshal(msg)
-				if err != nil {
-					log.Printf("Error marshalling message: %v", err)
-					continue
-				}
-				client.send <- string(msgJson)
-			}
-            log.Printf("Game set")
-			count = 0
-			log.Printf("Answers: %v", s.answers)
-			answer ,err := sendToDify(s.answers)
-			if err != nil {
-				log.Printf("Error sending data to Dify: %v", err)
-			}
-			log.Printf("Answer from Dify: %s", answer)
-			for client := range s.clients {
-				resultmsg.ClientId = client.conn.RemoteAddr().String()
-				resultmsg.Signal = "result"
-				resultmsg.Word = answer
-				msgJson, err := json.Marshal(resultmsg)
-				if err != nil {
-					log.Printf("Error marshalling message: %v", err)
-					continue
-				}
-				client.send <- string(msgJson)
-			}
-			s.answers = nil
-        }
-        countLock.Unlock()
-    }
-}
 
 
 func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {

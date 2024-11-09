@@ -18,6 +18,7 @@ type Server struct {
     unregister chan *Client
     mutex      sync.Mutex
 	answers []AnswerMessage
+	expectedAnswerCount int
 }
 type Message struct {
     Signal string `json:"signal"`
