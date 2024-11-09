@@ -1,2 +1,4 @@
-test:
-	go run main.go struct.go
+.PHONY: run
+
+run:
+	go run $(shell ls *.go)
