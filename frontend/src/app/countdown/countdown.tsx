@@ -1,8 +1,20 @@
 // components/Countdown.js
-import { useState, useEffect } from 'react';
-import { ActionPage } from '../action/action_page';
+import { useState, useEffect } from "react";
+import { ActionPage } from "../action/action_page";
 
-export const Countdown = ({keyword, socket, name,clientId}:{keyword:string,socket:WebSocket|null,name:string,clientId:string}) =>{
+type CountdownProps = {
+  keyword: string;
+  socket: WebSocket | null;
+  name: string;
+  clientId: string;
+};
+
+export const Countdown = ({
+  keyword,
+  socket,
+  name,
+  clientId,
+}: CountdownProps) => {
   const [count, setCount] = useState(3);
   const [completed, setCompleted] = useState(false);
 
@@ -22,14 +34,19 @@ export const Countdown = ({keyword, socket, name,clientId}:{keyword:string,socke
   }, []);
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
       {completed ? (
         <div>
-          <ActionPage keyword={keyword} socket={socket} name={name} clientId={clientId}/>
+          <ActionPage
+            keyword={keyword}
+            socket={socket}
+            name={name}
+            clientId={clientId}
+          />
         </div>
       ) : (
         <h1>Countdown: {count}</h1>
       )}
     </div>
   );
-}
+};
