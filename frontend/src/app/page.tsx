@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Countdown } from "./countdown/countdown";
+import { Countdown } from "../components/countdown";
 
 export default function Home() {
   const [message, setMessage] = useState("ゲームを開始してください");

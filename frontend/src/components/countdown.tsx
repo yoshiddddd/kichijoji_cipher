@@ -1,6 +1,6 @@
 // components/Countdown.js
 import { useState, useEffect } from "react";
-import { ActionPage } from "../action/action_page";
+import { ActionPage } from "./ActionPage";
 
 type CountdownProps = {
   keyword: string;
