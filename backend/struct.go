@@ -8,6 +8,7 @@ import(
 type Client struct {
     conn *websocket.Conn
     send chan string
+	level int
 }
 
 type Server struct {
@@ -25,10 +26,21 @@ type Message struct {
     Word   string `json:"word"`
 }
 type AnswerMessage struct {
-	ClientId string `json:"clientId"`
-	Name string `json:"name"`
-	Answer string `json:"answer"`
-	Keyword string `json:"keyword"`
+	Type string `json:"type"`
+	Data struct{
+		ClientId string `json:"clientId"`
+		Name string `json:"name"`
+		Answer string `json:"answer"`
+		Keyword string `json:"keyword"`
+		CountTime int `json:"countTime"`
+	} `json:"data"`
+}
+type UserJoinMessage struct {
+	Type string `json:"type"`
+	Data struct {
+		Name  string `json:"name"`
+		Level int    `json:"level"`
+	} `json:"data"`
 }
 
 type DifyRequestPayload struct {

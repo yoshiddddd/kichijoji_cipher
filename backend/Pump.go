@@ -2,6 +2,7 @@ package main
 import(
 	"github.com/gorilla/websocket"
 	"log"
+	"encoding/json"
 )
 func (c *Client) writePump() {
     defer func() {
@@ -26,6 +27,7 @@ func (c *Client) writePump() {
 
 
 func (c *Client) readPump(s *Server) {
+	var receivedMsg UserJoinMessage
     defer func() {
         s.unregister <- c
         c.conn.Close()
@@ -39,8 +41,15 @@ func (c *Client) readPump(s *Server) {
             }
             break
         }
-
+		err = json.Unmarshal(message, &receivedMsg)
+		if err != nil {
+			log.Printf("Error unmarshalling message: %v", err)
+			return
+		}
+		log.Printf("こんにちは %s: %s", c.conn.RemoteAddr().String(), receivedMsg.Data.Name)
         // 受信したメッセージを処理する関数を呼び出す
+		if(receivedMsg.Type == "answer"){
         go s.handleMessage(c, message)
+		}
     }
 }
