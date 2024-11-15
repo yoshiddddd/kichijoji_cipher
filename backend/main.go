@@ -3,6 +3,7 @@ package main
 import (
     "log"
     "net/http"
+	"encoding/json"
     // "sync"
     "github.com/gorilla/websocket"
 )
@@ -22,12 +23,23 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
         log.Printf("Error upgrading connection: %v", err)
         return
     }
-
+	var registerMessage UserJoinMessage
+	_, message, err := conn.ReadMessage()
+	if err != nil {
+		log.Printf("Error reading message: %v", err)
+	}
+	err = json.Unmarshal(message, &registerMessage)
+	if err != nil {
+		log.Printf("Error unmarshalling message: %v", err)
+		return
+	}
+	log.Printf("こんにちは %s: %s", conn.RemoteAddr().String(), registerMessage.Data.Name)
     client := &Client{
         conn: conn,
         send: make(chan string, 256), // バッファ付きチャネル
+		RoomLevel: registerMessage.Data.Level,
     }
-
+	//ここに登録された時点でrun関数のhandleRegisterが呼ばれる
     server.register <- client
 
     // クライアントの送受信を開始

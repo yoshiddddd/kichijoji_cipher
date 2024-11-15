@@ -8,12 +8,13 @@ import(
 type Client struct {
     conn *websocket.Conn
     send chan string
-	level int
+	RoomLevel int
 }
 
 type Server struct {
 
     clients    map[*Client]bool
+	rooms      map[int][]*Client
     broadcast  chan string
     register   chan *Client
     unregister chan *Client

@@ -46,10 +46,14 @@ func (c *Client) readPump(s *Server) {
 			log.Printf("Error unmarshalling message: %v", err)
 			return
 		}
-		log.Printf("こんにちは %s: %s", c.conn.RemoteAddr().String(), receivedMsg.Data.Name)
+		// log.Printf("こんにちは %s: %s", c.conn.RemoteAddr().String(), receivedMsg.Data.Name)
         // 受信したメッセージを処理する関数を呼び出す
 		if(receivedMsg.Type == "answer"){
-        go s.handleMessage(c, message)
+        	go s.handleMessage(c, message)
 		}
+		// else if(receivedMsg.Type == "start")
+		// {
+			
+		// }
     }
 }
