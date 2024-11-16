@@ -5,18 +5,21 @@ export const ActionPage = ({
   socket,
   name,
   clientId,
+  rooomLevel,
 }: {
   keyword: string;
   socket: WebSocket | null;
   name: string;
   clientId: string;
+  rooomLevel: number;
 }) => {
   const [answer, setAnswer] = useState("");
   const [isAnswered, setIsAnswered] = useState(false);
+  const [countTime, setCountTime] = useState(10);
   function submitAnswer() {
     setIsAnswered(true);
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ clientId, name, answer, keyword }));
+      socket.send(JSON.stringify({type:'answer',data:{ clientId, name, answer, keyword ,countTime,rooomLevel}}));
     } else {
       console.error("WebSocket is not connected");
     }

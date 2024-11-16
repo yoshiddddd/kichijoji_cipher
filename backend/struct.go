@@ -8,16 +8,19 @@ import(
 type Client struct {
     conn *websocket.Conn
     send chan string
+	RoomLevel int
 }
 
 type Server struct {
 
     clients    map[*Client]bool
+	rooms      map[int][]*Client
     broadcast  chan string
     register   chan *Client
     unregister chan *Client
     mutex      sync.Mutex
 	answers []AnswerMessage
+	answersPerRoom map[int]map[*Client]AnswerMessage
 	expectedAnswerCount int
 }
 type Message struct {
@@ -25,10 +28,22 @@ type Message struct {
     Word   string `json:"word"`
 }
 type AnswerMessage struct {
-	ClientId string `json:"clientId"`
-	Name string `json:"name"`
-	Answer string `json:"answer"`
-	Keyword string `json:"keyword"`
+	Type string `json:"type"`
+	Data struct{
+		ClientId string `json:"clientId"`
+		Name string `json:"name"`
+		Answer string `json:"answer"`
+		Keyword string `json:"keyword"`
+		CountTime int `json:"countTime"`
+		RoomLevel int `json:"roomLevel"`
+	} `json:"data"`
+}
+type UserJoinMessage struct {
+	Type string `json:"type"`
+	Data struct {
+		Name  string `json:"name"`
+		Level int    `json:"roomLevel"`
+	} `json:"data"`
 }
 
 type DifyRequestPayload struct {

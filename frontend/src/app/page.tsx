@@ -13,6 +13,7 @@ export default function Home() {
   const [name, setName] = useState("");
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(false);
+  const [roomLevel, setRoomLevel] = useState(0);
 
   const handleStartGame = () => {
     // WebSocket 接続を確立
@@ -28,6 +29,7 @@ export default function Home() {
     newSocket.onopen = () => {
       console.log("Connected to server");
       setMessage("ユーザーを探しています...");
+      newSocket.send(JSON.stringify({ type: 'start', data: { roomLevel, name } }));
     };
 
     newSocket.onmessage = (event) => {
@@ -85,22 +87,50 @@ export default function Home() {
           socket={socket}
           name={name}
           clientId={clientId}
+          roomLevel={roomLevel}
         />
       ) : (
         <div>
-          <p>{message}</p>
-          {!isGameStarted && (
+        <p>{message}</p>
+        {!isGameStarted && (
+          <div>
+            <input
+              type="text"
+              placeholder="名前を入力してください"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
             <div>
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <button onClick={handleStartGame}>ゲームを開始</button>
+              <button
+                onClick={() => setRoomLevel(1)}
+                style={{
+                  backgroundColor: roomLevel === 1 ? 'lightblue' : 'white',
+                }}
+              >
+                初級
+              </button>
+              <button
+                onClick={() => setRoomLevel(2)}
+                style={{
+                  backgroundColor: roomLevel === 2 ? 'lightblue' : 'white',
+                }}
+              >
+                中級
+              </button>
+              <button
+                onClick={() => setRoomLevel(3)}
+                style={{
+                  backgroundColor: roomLevel === 3 ? 'lightblue' : 'white',
+                }}
+              >
+                上級
+              </button>
             </div>
-          )}
-        </div>
+            <button onClick={handleStartGame}>ゲームを開始</button>
+          </div>
+        )}
+      </div>
+      
       )}
     </div>
   );

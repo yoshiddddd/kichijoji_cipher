@@ -6,8 +6,8 @@ import (
 )
 
 func (s *Server) handleMessage(c *Client, message []byte) {
-    var sendMessage AnswerMessage
-    err := json.Unmarshal(message, &sendMessage)
+    var receivedMessage AnswerMessage
+    err := json.Unmarshal(message, &receivedMessage)
     if err != nil {
         log.Printf("Error unmarshalling message: %v", err)
         return
@@ -18,21 +18,21 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     defer s.mutex.Unlock()
 
     // 回答を追加
-    s.answers = append(s.answers, sendMessage)
+    s.answers = append(s.answers, receivedMessage)
     log.Printf("Received message from client %s: %s", c.conn.RemoteAddr().String(), message)
-
+	s.answersPerRoom[c.RoomLevel][c] = receivedMessage
     // すべての回答が揃ったかチェック
-    if len(s.answers) >= s.expectedAnswerCount {
+    if len(s.answersPerRoom[c.RoomLevel]) >= s.expectedAnswerCount {
         // 回答が揃った場合の処理を別の関数で行う
-        s.processAnswers()
+        s.processAnswers(c)
     }
 }
-func (s *Server) processAnswers() {
+func (s *Server) processAnswers(c *Client) {
     // クライアントに "end" シグナルを送信
     s.broadcastToClients(ClientSendMessage{
         Signal: "end",
         Word:   "AIが答えを出力中です",
-    })
+    },c)
 
     log.Printf("Game set")
     log.Printf("Answers: %v", s.answers)
@@ -49,19 +49,19 @@ func (s *Server) processAnswers() {
     s.broadcastToClients(ResultSendMessage{
         Signal: "result",
         Word:   answer,
-    })
+    }, c)
 
     // 回答リストをクリア
     s.answers = nil
 }
-func (s *Server) broadcastToClients(message interface{}) {
+func (s *Server) broadcastToClients(message interface{}, c *Client) {
     msgJson, err := json.Marshal(message)
     if err != nil {
         log.Printf("Error marshalling message: %v", err)
         return
     }
 
-    for client := range s.clients {
+    for client := range s.answersPerRoom[c.RoomLevel] {
         select {
         case client.send <- string(msgJson):
             // 送信成功
