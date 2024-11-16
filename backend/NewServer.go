@@ -9,6 +9,7 @@ func NewServer() *Server {
         register:   make(chan *Client),
         unregister: make(chan *Client),
 		answers: make([]AnswerMessage, 0, 2),
+		answersPerRoom: make(map[int]map[*Client]AnswerMessage),
 		expectedAnswerCount: 2,
     }
 }

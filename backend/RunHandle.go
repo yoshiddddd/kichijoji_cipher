@@ -15,7 +15,9 @@ func (s *Server) handleRegister(client *Client) {
     log.Printf("Client connected: %v", client.conn.RemoteAddr())
     log.Printf("Number of clients: %v", len(s.clients))
 	// log.Printf("type %f", client.Type)
-
+	if _, ok := s.answersPerRoom[client.RoomLevel]; !ok {
+        s.answersPerRoom[client.RoomLevel] = make(map[*Client]AnswerMessage)
+    }
     // 2人のクライアントが接続されたらゲーム開始
     // if len(s.clients) == s.expectedAnswerCount {
 		if(len(s.rooms[client.RoomLevel]) == s.expectedAnswerCount){

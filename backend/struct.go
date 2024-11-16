@@ -20,6 +20,7 @@ type Server struct {
     unregister chan *Client
     mutex      sync.Mutex
 	answers []AnswerMessage
+	answersPerRoom map[int]map[*Client]AnswerMessage
 	expectedAnswerCount int
 }
 type Message struct {
@@ -34,13 +35,14 @@ type AnswerMessage struct {
 		Answer string `json:"answer"`
 		Keyword string `json:"keyword"`
 		CountTime int `json:"countTime"`
+		RoomLevel int `json:"roomLevel"`
 	} `json:"data"`
 }
 type UserJoinMessage struct {
 	Type string `json:"type"`
 	Data struct {
 		Name  string `json:"name"`
-		Level int    `json:"level"`
+		Level int    `json:"roomLevel"`
 	} `json:"data"`
 }
 

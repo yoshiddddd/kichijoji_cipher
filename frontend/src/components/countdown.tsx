@@ -7,6 +7,7 @@ type CountdownProps = {
   socket: WebSocket | null;
   name: string;
   clientId: string;
+  roomLevel: number;
 };
 
 export const Countdown = ({
@@ -14,6 +15,7 @@ export const Countdown = ({
   socket,
   name,
   clientId,
+  roomLevel
 }: CountdownProps) => {
   const [count, setCount] = useState(3);
   const [completed, setCompleted] = useState(false);
@@ -42,6 +44,7 @@ export const Countdown = ({
             socket={socket}
             name={name}
             clientId={clientId}
+            roomLevel={roomLevel}
           />
         </div>
       ) : (

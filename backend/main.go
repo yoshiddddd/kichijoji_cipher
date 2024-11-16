@@ -33,7 +33,7 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error unmarshalling message: %v", err)
 		return
 	}
-	log.Printf("こんにちは %s: %s", conn.RemoteAddr().String(), registerMessage.Data.Name)
+	log.Printf("こんにちは %s: %s", conn.RemoteAddr().String(), registerMessage.Data.Level)
     client := &Client{
         conn: conn,
         send: make(chan string, 256), // バッファ付きチャネル
