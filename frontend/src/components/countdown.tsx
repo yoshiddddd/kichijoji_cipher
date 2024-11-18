@@ -15,7 +15,7 @@ export const Countdown = ({
   socket,
   name,
   clientId,
-  roomLevel
+  roomLevel,
 }: CountdownProps) => {
   const [count, setCount] = useState(3);
   const [completed, setCompleted] = useState(false);
