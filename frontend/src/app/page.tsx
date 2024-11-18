@@ -4,7 +4,7 @@ import { Countdown } from "../components/countdown";
 import DifficultyLevelButton from "@/components/DifficultyLevelButton";
 
 export default function Home() {
-  const [message, setMessage] = useState("ゲームを開始してください");
+  const [message, setMessage] = useState("レベルを選択してバトル準備");
   const socketRef = useRef<WebSocket | null>(null);
   const [start, setStart] = useState(false);
   const [keyword, setKeyword] = useState("");
@@ -98,16 +98,36 @@ export default function Home() {
         />
       ) : (
         <div>
-          <p>{message}</p>
+          <p
+            style={{ fontSize: "1.2rem", color: "#333", marginBottom: "20px" }}
+          >
+            {message}
+          </p>
           {!isGameStarted && (
-            <div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "20px",
+              }}
+            >
               <input
                 type="text"
                 placeholder="名前を入力してください"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                style={{
+                  padding: "12px 20px",
+                  fontSize: "1rem",
+                  borderRadius: "8px",
+                  border: "2px solid #ddd",
+                  width: "300px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                }}
               />
-              <div>
+              <div style={{ margin: "20px 0" }}>
                 <DifficultyLevelButton
                   label="初級"
                   roomLevel={roomLevel}
@@ -124,7 +144,21 @@ export default function Home() {
                   changeRoomLevel={changeRoomLevel}
                 />
               </div>
-              <button onClick={handleStartGame}>ゲームを開始</button>
+              <button
+                onClick={handleStartGame}
+                style={{
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  padding: "15px 30px",
+                  fontSize: "1.1rem",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s ease",
+                }}
+              >
+                ゲームを開始
+              </button>
             </div>
           )}
         </div>
