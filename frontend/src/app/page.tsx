@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "../components/countdown";
+import DifficultyLevelButton from "@/components/DifficultyLevelButton";
 
 export default function Home() {
-  const [message, setMessage] = useState("ゲームを開始してください");
+  const [message, setMessage] = useState("レベルを選択してバトル準備");
   const socketRef = useRef<WebSocket | null>(null);
   const [start, setStart] = useState(false);
   const [keyword, setKeyword] = useState("");
@@ -14,6 +15,10 @@ export default function Home() {
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(false);
   const [roomLevel, setRoomLevel] = useState(0);
+
+  const changeRoomLevel = (level: number) => {
+    setRoomLevel(level);
+  };
 
   const handleStartGame = () => {
     // WebSocket 接続を確立
@@ -29,7 +34,9 @@ export default function Home() {
     newSocket.onopen = () => {
       console.log("Connected to server");
       setMessage("ユーザーを探しています...");
-      newSocket.send(JSON.stringify({ type: 'start', data: { roomLevel, name } }));
+      newSocket.send(
+        JSON.stringify({ type: "start", data: { roomLevel, name } })
+      );
     };
 
     newSocket.onmessage = (event) => {
@@ -72,7 +79,16 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
+    <div
+      style={{
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+      }}
+    >
       {thinking ? (
         <h1>AIがジャッジしています...</h1>
       ) : result ? (
@@ -91,46 +107,70 @@ export default function Home() {
         />
       ) : (
         <div>
-        <p>{message}</p>
-        {!isGameStarted && (
-          <div>
-            <input
-              type="text"
-              placeholder="名前を入力してください"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <div>
-              <button
-                onClick={() => setRoomLevel(1)}
+          <p
+            style={{ fontSize: "1.2rem", color: "black", marginBottom: "20px" }}
+          >
+            {message}
+          </p>
+          {!isGameStarted && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "20px",
+              }}
+            >
+              <input
+                type="text"
+                placeholder="名前を入力してください"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 style={{
-                  backgroundColor: roomLevel === 1 ? 'lightblue' : 'white',
+                  padding: "12px 20px",
+                  fontSize: "1rem",
+                  borderRadius: "8px",
+                  border: "2px solid #ddd",
+                  width: "300px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                }}
+              />
+              <div style={{ margin: "20px 0" }}>
+                <DifficultyLevelButton
+                  label="初級"
+                  roomLevel={roomLevel}
+                  changeRoomLevel={changeRoomLevel}
+                />
+                <DifficultyLevelButton
+                  label="中級"
+                  roomLevel={roomLevel}
+                  changeRoomLevel={changeRoomLevel}
+                />
+                <DifficultyLevelButton
+                  label="上級"
+                  roomLevel={roomLevel}
+                  changeRoomLevel={changeRoomLevel}
+                />
+              </div>
+              <button
+                onClick={handleStartGame}
+                style={{
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  padding: "15px 30px",
+                  fontSize: "1.1rem",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s ease",
                 }}
               >
-                初級
-              </button>
-              <button
-                onClick={() => setRoomLevel(2)}
-                style={{
-                  backgroundColor: roomLevel === 2 ? 'lightblue' : 'white',
-                }}
-              >
-                中級
-              </button>
-              <button
-                onClick={() => setRoomLevel(3)}
-                style={{
-                  backgroundColor: roomLevel === 3 ? 'lightblue' : 'white',
-                }}
-              >
-                上級
+                ゲームを開始
               </button>
             </div>
-            <button onClick={handleStartGame}>ゲームを開始</button>
-          </div>
-        )}
-      </div>
-      
+          )}
+        </div>
       )}
     </div>
   );
