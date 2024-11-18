@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "next": "15.0.1",
-    "parse-json": "^8.1.0",
     "react": "19.0.0-rc-69d4b800-20241021",
     "react-dom": "19.0.0-rc-69d4b800-20241021",
     "socket.io-client": "^4.8.1"
