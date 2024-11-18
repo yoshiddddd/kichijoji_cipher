@@ -79,7 +79,16 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
+    <div
+      style={{
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+      }}
+    >
       {thinking ? (
         <h1>AIがジャッジしています...</h1>
       ) : result ? (
@@ -99,7 +108,7 @@ export default function Home() {
       ) : (
         <div>
           <p
-            style={{ fontSize: "1.2rem", color: "#333", marginBottom: "20px" }}
+            style={{ fontSize: "1.2rem", color: "black", marginBottom: "20px" }}
           >
             {message}
           </p>
