@@ -17,8 +17,8 @@ func sendToDify(data []AnswerMessage) (string, error) {
 	token :=os.Getenv("DIFY_APIKEY")
 	fmt.Println(token)
 	//送信するクエリの内容はここ
-	query := fmt.Sprintf("keyword: %s name(%s) Answer: %s, name(%s) Answer: %s",
-	data[0].Data.Keyword, data[0].Data.Name, data[0].Data.Answer, data[1].Data.Name, data[1].Data.Answer)
+	query := fmt.Sprintf("keyword: %s name(%s) Answer: %s CountTime: %d, name(%s) Answer: %s CountTime: %d",
+	data[0].Data.Keyword, data[0].Data.Name, data[0].Data.Answer,data[0].Data.CountTime, data[1].Data.Name, data[1].Data.Answer, data[1].Data.CountTime)
 
 	payload := DifyRequestPayload{
         Inputs:         map[string]interface{}{}, 
