@@ -48,7 +48,26 @@ export const Countdown = ({
           />
         </div>
       ) : (
-        <h1>Countdown: {count}</h1>
+        <h1
+          style={{
+            fontSize: "4rem",
+            color: "#2c5282",
+            fontWeight: "bold",
+            width: "120px",
+            height: "120px",
+            lineHeight: "120px",
+            backgroundColor: "#ebf8ff",
+            borderRadius: "50%",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            animation: "pulse 1s infinite",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {count}
+        </h1>
       )}
     </div>
   );
