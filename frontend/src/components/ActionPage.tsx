@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export const ActionPage = ({
   keyword,
@@ -15,7 +15,18 @@ export const ActionPage = ({
 }) => {
   const [answer, setAnswer] = useState("");
   const [isAnswered, setIsAnswered] = useState(false);
-  const [countTime, setCountTime] = useState(10);
+  const [countTime, setCountTime] = useState(0);
+
+  useEffect(() => {
+    if (!isAnswered) {
+      const timer = setInterval(() => {
+        setCountTime((prevTime) => prevTime + 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [isAnswered]);
+
   function submitAnswer() {
     setIsAnswered(true);
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -79,6 +90,15 @@ export const ActionPage = ({
           marginBottom: "15px",
         }}
       />
+      <div
+        style={{
+          fontSize: "1.5rem",
+          color: "#2c5282",
+          marginBottom: "15px",
+        }}
+      >
+        経過時間: {countTime}秒
+      </div>
       <button
         type="submit"
         onClick={submitAnswer}
