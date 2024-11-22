@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "../components/countdown";
 import DifficultyLevelButton from "@/components/DifficultyLevelButton";
+import Result from "@/components/Result";
 
 export default function Home() {
   const [message, setMessage] = useState("レベルを選択してバトル準備");
@@ -93,8 +94,7 @@ export default function Home() {
         <h1>AIがジャッジしています...</h1>
       ) : result ? (
         <div>
-          <h1>結果発表</h1>
-          <h2>{keyword}</h2>
+          <Result keyword={keyword} name={name} />
           <button onClick={handleReset}>もう一度プレイ</button>
         </div>
       ) : start ? (
