@@ -95,7 +95,22 @@ export default function Home() {
       ) : result ? (
         <div>
           <Result keyword={keyword} name={name} />
-          <button onClick={handleReset}>もう一度プレイ</button>
+          <button
+            onClick={handleReset}
+            style={{
+              backgroundColor: "#4299e1",
+              color: "white",
+              padding: "12px 30px",
+              fontSize: "1.1rem",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "background-color 0.3s ease",
+              marginTop: "30px",
+            }}
+          >
+            もう一度プレイ
+          </button>
         </div>
       ) : start ? (
         <Countdown
