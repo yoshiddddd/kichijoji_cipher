@@ -93,6 +93,7 @@ func (s *Server) removeClient(client *Client) {
 
     if _, ok := s.clients[client]; ok {
         delete(s.clients, client)
+		delete(s.rooms, client.RoomLevel)
         close(client.send)
         log.Printf("Client removed: %v", client.conn.RemoteAddr())
         log.Printf("Number of clients: %v", len(s.clients))
