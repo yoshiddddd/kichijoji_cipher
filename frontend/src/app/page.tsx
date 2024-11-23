@@ -27,6 +27,10 @@ export default function Home() {
       alert("名前を入力してください");
       return;
     }
+    if (!roomLevel) {
+      alert("レベルを選択してください");
+      return;
+    }
     const newSocket = new WebSocket("ws://localhost:8080/ws");
     setSocket(newSocket);
     socketRef.current = newSocket;
