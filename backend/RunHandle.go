@@ -19,8 +19,9 @@ func (s *Server) handleRegister(client *Client) {
         s.answersPerRoom[client.RoomLevel] = make(map[*Client]AnswerMessage)
     }
     // 2人のクライアントが接続されたらゲーム開始
+	log.Printf("len(s.rooms[client.RoomLevel]) %d", len(s.rooms[client.RoomLevel]))
     // if len(s.clients) == s.expectedAnswerCount {
-		if(len(s.rooms[client.RoomLevel]) == s.expectedAnswerCount){
+	if(len(s.rooms[client.RoomLevel]) == s.expectedAnswerCount){
         log.Printf("Start game")
         s.startGame(client.RoomLevel)
     }
@@ -59,6 +60,7 @@ func (s *Server) sendStartMessageToClients(sendKeyword string , RoomLevel int) {
         s.sendMessageToClient(client, string(msgJson))
     }
 }
+
 func (s *Server) sendMessageToClient(client *Client, message string) {
     select {
     case client.send <- message:
@@ -68,11 +70,11 @@ func (s *Server) sendMessageToClient(client *Client, message string) {
         log.Printf("Failed to send message to client: %v", client.conn.RemoteAddr())
     }
 }
+
 func (s *Server) handleUnregister(client *Client) {
     s.removeClient(client)
     log.Printf("Client disconnected: %v", client.conn.RemoteAddr())
 }
-
 
 func (s *Server) handleBroadcast(message string) {
     log.Printf("Broadcasting message: %v", message)

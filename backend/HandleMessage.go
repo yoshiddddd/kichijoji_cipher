@@ -25,6 +25,8 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     if len(s.answersPerRoom[c.RoomLevel]) >= s.expectedAnswerCount {
         // 回答が揃った場合の処理を別の関数で行う
         s.processAnswers(c)
+		delete(s.answersPerRoom, c.RoomLevel)
+		delete(s.rooms, c.RoomLevel)
     }
 }
 func (s *Server) processAnswers(c *Client) {
