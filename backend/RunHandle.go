@@ -93,6 +93,7 @@ func (s *Server) removeClient(client *Client) {
 
     if _, ok := s.clients[client]; ok {
         delete(s.clients, client)
+		//TODO room増えたらここは修正必要あり
 		delete(s.rooms, client.RoomLevel)
         close(client.send)
         log.Printf("Client removed: %v", client.conn.RemoteAddr())
