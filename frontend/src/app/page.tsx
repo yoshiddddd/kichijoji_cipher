@@ -12,7 +12,10 @@ export default function Home() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [clientId, setClientId] = useState("");
   const [isGameStarted, setIsGameStarted] = useState(false);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(() => {
+    const savedName = localStorage.getItem("userName");
+    return savedName || "";
+  });
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(false);
   const [roomLevel, setRoomLevel] = useState(0);
@@ -22,6 +25,11 @@ export default function Home() {
   };
 
   const handleStartGame = () => {
+    // 名前をローカルストレージに保存
+    if (name) {
+      localStorage.setItem("userName", name);
+    }
+
     // WebSocket 接続を確立
     if (!name) {
       alert("名前を入力してください");
