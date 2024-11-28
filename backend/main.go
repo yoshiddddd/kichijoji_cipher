@@ -40,6 +40,7 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
 		RoomLevel: registerMessage.Data.Level,
 		SecretWord:registerMessage.Data.SecretWord,
     }
+
 	//ここに登録された時点でrun関数のhandleRegisterが呼ばれる
     server.register <- client
 
