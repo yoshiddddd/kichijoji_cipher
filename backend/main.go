@@ -38,6 +38,7 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
         conn: conn,
         send: make(chan string, 256), // バッファ付きチャネル
 		RoomLevel: registerMessage.Data.Level,
+		SecretWord:registerMessage.Data.SecretWord,
     }
 	//ここに登録された時点でrun関数のhandleRegisterが呼ばれる
     server.register <- client

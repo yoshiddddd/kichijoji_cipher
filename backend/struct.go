@@ -9,6 +9,7 @@ type Client struct {
     conn *websocket.Conn
     send chan string
 	RoomLevel int
+	SecretWord string
 }
 
 type Server struct {
@@ -22,6 +23,7 @@ type Server struct {
 	answers []AnswerMessage
 	answersPerRoom map[int]map[*Client]AnswerMessage
 	expectedAnswerCount int
+	secretWordQueues map[int]map[string][]*Client
 }
 type Message struct {
     Signal string `json:"signal"`
