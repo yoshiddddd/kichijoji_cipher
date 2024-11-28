@@ -11,23 +11,28 @@ func (s *Server) handleRegister(client *Client) {
     defer s.mutex.Unlock()
 
     s.clients[client] = true
-	s.rooms[client.RoomLevel] = append(s.rooms[client.RoomLevel], client)
+	// s.rooms[client.RoomLevel] = append(s.rooms[client.RoomLevel], client)
+	s.secretWordQueues[client.RoomLevel][client.SecretWord] = append(s.secretWordQueues[client.RoomLevel][client.SecretWord], client)
     log.Printf("Client connected: %v", client.conn.RemoteAddr())
     log.Printf("Number of clients: %v", len(s.clients))
 	// log.Printf("type %f", client.Type)
 	if _, ok := s.answersPerRoom[client.RoomLevel]; !ok {
-        s.answersPerRoom[client.RoomLevel] = make(map[*Client]AnswerMessage)
+		s.answersPerRoom[client.RoomLevel] = make(map[string]map[*Client]AnswerMessage)
+	}
+	
+	if _, ok := s.answersPerRoom[client.RoomLevel][client.SecretWord]; !ok {
+        s.answersPerRoom[client.SecretWord] = make(map[*Client]AnswerMessage)
     }
     // 2人のクライアントが接続されたらゲーム開始
-	log.Printf("len(s.rooms[client.RoomLevel]) %d", len(s.rooms[client.RoomLevel]))
+	log.Printf("len(s.rooms[client.RoomLevel]) %d", len(s.secretWordQueues[client.RoomLevel][client.SecretWord]))
     // if len(s.clients) == s.expectedAnswerCount {
-	if(len(s.rooms[client.RoomLevel]) == s.expectedAnswerCount){
+	if(len(s.secretWordQueues[client.RoomLevel][client.SecretWord]) == s.expectedAnswerCount){
         log.Printf("Start game")
-        s.startGame(client.RoomLevel)
+        s.startGame(client.RoomLevel, client.SecretWord)
     }
 }
 
-func (s *Server) startGame(RoomLevel int) {
+func (s *Server) startGame(RoomLevel int, SecretWord string) {
 	var sendKeyword string
 	if RoomLevel == 1 {
 		sendKeyword = firstRandomWordGenerate()
@@ -39,7 +44,7 @@ func (s *Server) startGame(RoomLevel int) {
     go s.sendStartMessageToClients(sendKeyword, RoomLevel)
 }
 
-func (s *Server) sendStartMessageToClients(sendKeyword string , RoomLevel int) {
+func (s *Server) sendStartMessageToClients(sendKeyword string , RoomLevel int, SecretWord string) {
     s.mutex.Lock()
     defer s.mutex.Unlock()
 
@@ -47,7 +52,7 @@ func (s *Server) sendStartMessageToClients(sendKeyword string , RoomLevel int) {
     msg.Signal = "start"
     msg.Word = sendKeyword
 
-    for _, client := range s.rooms[RoomLevel] {
+    for _, client := range s.secretWordQueues[RoomLevel][SecretWord] {
         // クライアントごとに ClientId を設定
         msg.ClientId = client.conn.RemoteAddr().String()
         msgJson, err := json.Marshal(msg)
