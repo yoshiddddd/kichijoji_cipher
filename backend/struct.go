@@ -78,3 +78,9 @@ type DifyResponse struct {
 }
 
 type userCount int
+
+const (
+    BEGINNER = iota + 1
+    INTERMEDIATE
+    ADVANCED
+)

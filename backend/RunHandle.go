@@ -19,7 +19,7 @@ func (s *Server) handleRegister(client *Client) {
 	if _, ok := s.answersPerRoom[client.RoomLevel]; !ok {
 		s.answersPerRoom[client.RoomLevel] = make(map[string]map[*Client]AnswerMessage)
 	}
-	
+
 	if _, ok := s.answersPerRoom[client.RoomLevel][client.SecretWord]; !ok {
         s.answersPerRoom[client.SecretWord] = make(map[*Client]AnswerMessage)
     }
@@ -34,11 +34,11 @@ func (s *Server) handleRegister(client *Client) {
 
 func (s *Server) startGame(RoomLevel int, SecretWord string) {
 	var sendKeyword string
-	if RoomLevel == 1 {
+	if RoomLevel == BEGINNER {
 		sendKeyword = firstRandomWordGenerate()
-	} else if RoomLevel == 2 {
+	} else if RoomLevel == INTERMEDIATE {
 		sendKeyword = secondRandomWordGenerate()
-	} else if RoomLevel == 3 {
+	} else if RoomLevel == ADVANCED {
 		sendKeyword = thirdRandomWordGenerate()
 	}
     go s.sendStartMessageToClients(sendKeyword, RoomLevel)
