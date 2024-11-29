@@ -63,7 +63,7 @@ func (s *Server) broadcastToClients(message interface{}, c *Client) {
         return
     }
 
-    for client := range s.answersPerRoom[c.RoomLevel] {
+    for client := range s.answersPerRoom[c.RoomLevel][c.SecretWord] {
         select {
         case client.send <- string(msgJson):
             // 送信成功

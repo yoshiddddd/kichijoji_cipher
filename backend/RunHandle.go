@@ -21,8 +21,9 @@ func (s *Server) handleRegister(client *Client) {
 	}
 
 	if _, ok := s.answersPerRoom[client.RoomLevel][client.SecretWord]; !ok {
-        s.answersPerRoom[client.SecretWord] = make(map[*Client]AnswerMessage)
+        s.answersPerRoom[client.RoomLevel][client.SecretWord] = make(map[*Client]AnswerMessage)
     }
+
     // 2人のクライアントが接続されたらゲーム開始
 	log.Printf("len(s.rooms[client.RoomLevel]) %d", len(s.secretWordQueues[client.RoomLevel][client.SecretWord]))
     // if len(s.clients) == s.expectedAnswerCount {
@@ -41,7 +42,7 @@ func (s *Server) startGame(RoomLevel int, SecretWord string) {
 	} else if RoomLevel == ADVANCED {
 		sendKeyword = thirdRandomWordGenerate()
 	}
-    go s.sendStartMessageToClients(sendKeyword, RoomLevel)
+    go s.sendStartMessageToClients(sendKeyword, RoomLevel,SecretWord)
 }
 
 func (s *Server) sendStartMessageToClients(sendKeyword string , RoomLevel int, SecretWord string) {

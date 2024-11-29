@@ -45,6 +45,7 @@ type UserJoinMessage struct {
 	Data struct {
 		Name  string `json:"name"`
 		Level int    `json:"roomLevel"`
+		SecretWord string  `json:"secretWord"`
 	} `json:"data"`
 }
 
