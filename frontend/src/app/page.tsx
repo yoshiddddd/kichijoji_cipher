@@ -19,6 +19,7 @@ export default function Home() {
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(false);
   const [roomLevel, setRoomLevel] = useState(0);
+  const [secretWord, setSecretWord] = useState("");
 
   const changeRoomLevel = (level: number) => {
     setRoomLevel(level);
@@ -35,6 +36,10 @@ export default function Home() {
       alert("名前を入力してください");
       return;
     }
+    if(!secretWord){
+        alert("合言葉を入力してください");
+        return;
+    }
     if (!roomLevel) {
       alert("レベルを選択してください");
       return;
@@ -48,7 +53,7 @@ export default function Home() {
       console.log("Connected to server");
       setMessage("ユーザーを探しています...");
       newSocket.send(
-        JSON.stringify({ type: "start", data: { roomLevel, name } })
+        JSON.stringify({ type: "start", data: { roomLevel, name ,secretWord} })
       );
     };
 
@@ -163,6 +168,12 @@ export default function Home() {
                   transition: "border-color 0.3s ease",
                 }}
               />
+              <input
+                type="text"
+                placeholder="合言葉を入力してください。"
+                value={secretWord}
+                onChange={(e) => setSecretWord(e.target.value)}
+               />
               <div style={{ margin: "20px 0" }}>
                 <DifficultyLevelButton
                   label="初級"
