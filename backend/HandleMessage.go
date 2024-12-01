@@ -25,10 +25,21 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     if len(s.answersPerRoom[c.RoomLevel][c.SecretWord]) >= s.expectedAnswerCount {
         // 回答が揃った場合の処理を別の関数で行う
         s.processAnswers(c)
-		delete(s.answersPerRoom, c.RoomLevel)
-		delete(s.rooms, c.RoomLevel)
+		delete(s.answersPerRoom[c.RoomLevel][c.SecretWord], c)
+		delete(s.secretWordQueues[c.RoomLevel], c.SecretWord)
     }
 }
+
+func removeAnswersByClientID(answers []AnswerMessage, clientID string) []AnswerMessage {
+	var filteredAnswers []AnswerMessage
+	for _, answer := range answers {
+		if answer.Data.ClientId != clientID {
+			filteredAnswers = append(filteredAnswers, answer)
+		}
+	}
+	return filteredAnswers
+}
+
 func (s *Server) processAnswers(c *Client) {
     // クライアントに "end" シグナルを送信
     s.broadcastToClients(ClientSendMessage{
@@ -37,10 +48,13 @@ func (s *Server) processAnswers(c *Client) {
     },c)
 
     log.Printf("Game set")
-    log.Printf("Answers: %v", s.answers)
+    // log.Printf("Answers: %v", s.answers)
+    log.Printf("Answers: %v", s.answersPerRoom[c.RoomLevel][c.SecretWord])
 
     // AIへのリクエストを行う
-    answer, err := sendToDify(s.answers)
+		//同時リクエストに対する排他制御
+    // answer, err := sendToDify(s.answers)
+    answer, err := sendToDify(s.answersPerRoom[c.RoomLevel][c.SecretWord])
     if err != nil {
         log.Printf("Error sending data to Dify: %v", err)
         return
@@ -54,7 +68,10 @@ func (s *Server) processAnswers(c *Client) {
     }, c)
 
     // 回答リストをクリア
-    s.answers = nil
+	//TODO ここに問題あり
+    // s.answers = nil
+	// s.answers = removeAnswersByClientID(s.answers, c.conn.RemoteAddr().String())
+	// log.Printf("removed answers: %v", s.answers)
 }
 func (s *Server) broadcastToClients(message interface{}, c *Client) {
     msgJson, err := json.Marshal(message)

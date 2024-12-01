@@ -16,9 +16,6 @@ func (s *Server) handleRegister(client *Client) {
     log.Printf("Client connected: %v", client.conn.RemoteAddr())
     log.Printf("Number of clients: %v", len(s.clients))
 	// log.Printf("type %f", client.Type)
-	if _, ok := s.answersPerRoom[client.RoomLevel]; !ok {
-		s.answersPerRoom[client.RoomLevel] = make(map[string]map[*Client]AnswerMessage)
-	}
 
 	if _, ok := s.answersPerRoom[client.RoomLevel][client.SecretWord]; !ok {
         s.answersPerRoom[client.RoomLevel][client.SecretWord] = make(map[*Client]AnswerMessage)
@@ -99,8 +96,8 @@ func (s *Server) removeClient(client *Client) {
 
     if _, ok := s.clients[client]; ok {
         delete(s.clients, client)
-		//TODO room増えたらここは修正必要あり
-		delete(s.rooms, client.RoomLevel)
+		//TODO room増えたらここは修正必要ありかも
+		delete(s.secretWordQueues[client.RoomLevel], client.SecretWord)
         close(client.send)
         log.Printf("Client removed: %v", client.conn.RemoteAddr())
         log.Printf("Number of clients: %v", len(s.clients))
