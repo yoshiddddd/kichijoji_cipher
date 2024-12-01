@@ -21,10 +21,11 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     log.Printf("Received message from client %s: %s", c.conn.RemoteAddr().String(), message)
 	s.answersPerRoom[c.RoomLevel][c.SecretWord][c] = receivedMessage
     // すべての回答が揃ったかチェック
+	log.Printf("len(s.answersPerRoom[c.RoomLevel][c.SecretWord]) %d", len(s.answersPerRoom[c.RoomLevel][c.SecretWord]))
     if len(s.answersPerRoom[c.RoomLevel][c.SecretWord]) >= s.expectedAnswerCount {
         // 回答が揃った場合の処理を別の関数で行う
         s.processAnswers(c)
-		delete(s.answersPerRoom[c.RoomLevel][c.SecretWord], c)
+		delete(s.answersPerRoom[c.RoomLevel], c.SecretWord)
 		delete(s.secretWordQueues[c.RoomLevel], c.SecretWord)
     }
 }
