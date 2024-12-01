@@ -30,15 +30,6 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     }
 }
 
-func removeAnswersByClientID(answers []AnswerMessage, clientID string) []AnswerMessage {
-	var filteredAnswers []AnswerMessage
-	for _, answer := range answers {
-		if answer.Data.ClientId != clientID {
-			filteredAnswers = append(filteredAnswers, answer)
-		}
-	}
-	return filteredAnswers
-}
 
 func (s *Server) processAnswers(c *Client) {
     // クライアントに "end" シグナルを送信
