@@ -26,24 +26,7 @@ export default function Home() {
   };
 
   const handleStartGame = () => {
-    // 名前をローカルストレージに保存
-    if (name) {
-      localStorage.setItem("userName", name);
-    }
 
-    // WebSocket 接続を確立
-    if (!name) {
-      alert("名前を入力してください");
-      return;
-    }
-    if(!secretWord){
-        alert("合言葉を入力してください");
-        return;
-    }
-    if (!roomLevel) {
-      alert("レベルを選択してください");
-      return;
-    }
     const newSocket = new WebSocket("ws://localhost:8080/ws");
     setSocket(newSocket);
     socketRef.current = newSocket;
@@ -76,12 +59,36 @@ export default function Home() {
         setResult(true);
         newSocket.close();
       }
+      if(data.signal === "alreadyExist"){
+        alert("すでに同じ合言葉が存在します。名前を変更してください。");
+        window.location.reload();
+      }
     };
 
     newSocket.onclose = () => {
       console.log("Disconnected from server");
       setMessage("接続が切れました");
     };
+
+    // 名前をローカルストレージに保存
+    if (name) {
+      localStorage.setItem("userName", name);
+    }
+
+    // WebSocket 接続を確立
+    if (!name) {
+      alert("名前を入力してください");
+      return;
+    }
+    if(!secretWord){
+        alert("合言葉を入力してください");
+        return;
+    }
+    if (!roomLevel) {
+      alert("レベルを選択してください");
+      return;
+    }
+   
   };
 
   const handleReset = () => {
