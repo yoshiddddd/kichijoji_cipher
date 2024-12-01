@@ -6,6 +6,7 @@ import (
 	"encoding/json"
     // "sync"
     "github.com/gorilla/websocket"
+	// "golang.org/x/exp/slices"
 )
 
 var upgrader = websocket.Upgrader{
@@ -15,6 +16,16 @@ var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
         return true
     },
+}
+func doesStringExist(secretWordQueues map[int]map[string][]*Client, target string) bool {
+    for _, innerMap := range secretWordQueues {
+        if _, exists := innerMap[target]; exists {
+			if len(innerMap[target]) == 2 {
+            return true // 見つかった場合
+			}
+        }
+    }
+    return false // 見つからなかった場合
 }
 
 func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
@@ -31,6 +42,10 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(message, &registerMessage)
 	if err != nil {
 		log.Printf("Error unmarshalling message: %v", err)
+		return
+	}
+	if doesStringExist(server.secretWordQueues, registerMessage.Data.SecretWord) {
+		log.Printf("SecretWord already exists")
 		return
 	}
 	log.Printf("こんにちは %s: %s", conn.RemoteAddr().String(), registerMessage.Data.Level)
