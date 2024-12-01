@@ -19,26 +19,14 @@ export default function Home() {
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(false);
   const [roomLevel, setRoomLevel] = useState(0);
+  const [secretWord, setSecretWord] = useState("");
 
   const changeRoomLevel = (level: number) => {
     setRoomLevel(level);
   };
 
   const handleStartGame = () => {
-    // 名前をローカルストレージに保存
-    if (name) {
-      localStorage.setItem("userName", name);
-    }
 
-    // WebSocket 接続を確立
-    if (!name) {
-      alert("名前を入力してください");
-      return;
-    }
-    if (!roomLevel) {
-      alert("レベルを選択してください");
-      return;
-    }
     const newSocket = new WebSocket("ws://localhost:8080/ws");
     setSocket(newSocket);
     socketRef.current = newSocket;
@@ -48,7 +36,7 @@ export default function Home() {
       console.log("Connected to server");
       setMessage("ユーザーを探しています...");
       newSocket.send(
-        JSON.stringify({ type: "start", data: { roomLevel, name } })
+        JSON.stringify({ type: "start", data: { roomLevel, name ,secretWord} })
       );
     };
 
@@ -71,12 +59,36 @@ export default function Home() {
         setResult(true);
         newSocket.close();
       }
+      if(data.signal === "alreadyExist"){
+        alert("すでに同じ合言葉が存在します。名前を変更してください。");
+        window.location.reload();
+      }
     };
 
     newSocket.onclose = () => {
       console.log("Disconnected from server");
       setMessage("接続が切れました");
     };
+
+    // 名前をローカルストレージに保存
+    if (name) {
+      localStorage.setItem("userName", name);
+    }
+
+    // WebSocket 接続を確立
+    if (!name) {
+      alert("名前を入力してください");
+      return;
+    }
+    if(!secretWord){
+        alert("合言葉を入力してください");
+        return;
+    }
+    if (!roomLevel) {
+      alert("レベルを選択してください");
+      return;
+    }
+   
   };
 
   const handleReset = () => {
@@ -163,6 +175,12 @@ export default function Home() {
                   transition: "border-color 0.3s ease",
                 }}
               />
+              <input
+                type="text"
+                placeholder="合言葉を入力してください。"
+                value={secretWord}
+                onChange={(e) => setSecretWord(e.target.value)}
+               />
               <div style={{ margin: "20px 0" }}>
                 <DifficultyLevelButton
                   label="初級"

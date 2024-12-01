@@ -18,17 +18,19 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     defer s.mutex.Unlock()
 
     // 回答を追加
-    s.answers = append(s.answers, receivedMessage)
     log.Printf("Received message from client %s: %s", c.conn.RemoteAddr().String(), message)
-	s.answersPerRoom[c.RoomLevel][c] = receivedMessage
+	s.answersPerRoom[c.RoomLevel][c.SecretWord][c] = receivedMessage
     // すべての回答が揃ったかチェック
-    if len(s.answersPerRoom[c.RoomLevel]) >= s.expectedAnswerCount {
+	log.Printf("len(s.answersPerRoom[c.RoomLevel][c.SecretWord]) %d", len(s.answersPerRoom[c.RoomLevel][c.SecretWord]))
+    if len(s.answersPerRoom[c.RoomLevel][c.SecretWord]) >= s.expectedAnswerCount {
         // 回答が揃った場合の処理を別の関数で行う
         s.processAnswers(c)
-		delete(s.answersPerRoom, c.RoomLevel)
-		delete(s.rooms, c.RoomLevel)
+		delete(s.answersPerRoom[c.RoomLevel], c.SecretWord)
+		delete(s.secretWordQueues[c.RoomLevel], c.SecretWord)
     }
 }
+
+
 func (s *Server) processAnswers(c *Client) {
     // クライアントに "end" シグナルを送信
     s.broadcastToClients(ClientSendMessage{
@@ -37,10 +39,13 @@ func (s *Server) processAnswers(c *Client) {
     },c)
 
     log.Printf("Game set")
-    log.Printf("Answers: %v", s.answers)
+    // log.Printf("Answers: %v", s.answers)
+    log.Printf("Answers: %v", s.answersPerRoom[c.RoomLevel][c.SecretWord])
 
     // AIへのリクエストを行う
-    answer, err := sendToDify(s.answers)
+		//同時リクエストに対する排他制御
+    // answer, err := sendToDify(s.answers)
+    answer, err := sendToDify(s.answersPerRoom[c.RoomLevel][c.SecretWord])
     if err != nil {
         log.Printf("Error sending data to Dify: %v", err)
         return
@@ -54,7 +59,10 @@ func (s *Server) processAnswers(c *Client) {
     }, c)
 
     // 回答リストをクリア
-    s.answers = nil
+	//TODO ここに問題あり
+    // s.answers = nil
+	// s.answers = removeAnswersByClientID(s.answers, c.conn.RemoteAddr().String())
+	// log.Printf("removed answers: %v", s.answers)
 }
 func (s *Server) broadcastToClients(message interface{}, c *Client) {
     msgJson, err := json.Marshal(message)
@@ -63,7 +71,7 @@ func (s *Server) broadcastToClients(message interface{}, c *Client) {
         return
     }
 
-    for client := range s.answersPerRoom[c.RoomLevel] {
+    for client := range s.answersPerRoom[c.RoomLevel][c.SecretWord] {
         select {
         case client.send <- string(msgJson):
             // 送信成功

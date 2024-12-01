@@ -9,6 +9,7 @@ type Client struct {
     conn *websocket.Conn
     send chan string
 	RoomLevel int
+	SecretWord string
 }
 
 type Server struct {
@@ -19,9 +20,9 @@ type Server struct {
     register   chan *Client
     unregister chan *Client
     mutex      sync.Mutex
-	answers []AnswerMessage
-	answersPerRoom map[int]map[*Client]AnswerMessage
+	answersPerRoom map[int]map[string]map[*Client]AnswerMessage
 	expectedAnswerCount int
+	secretWordQueues map[int]map[string][]*Client
 }
 type Message struct {
     Signal string `json:"signal"`
@@ -43,6 +44,7 @@ type UserJoinMessage struct {
 	Data struct {
 		Name  string `json:"name"`
 		Level int    `json:"roomLevel"`
+		SecretWord string  `json:"secretWord"`
 	} `json:"data"`
 }
 
@@ -76,3 +78,9 @@ type DifyResponse struct {
 }
 
 type userCount int
+
+const (
+    BEGINNER = iota + 1
+    INTERMEDIATE
+    ADVANCED
+)
