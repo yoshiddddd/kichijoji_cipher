@@ -18,7 +18,6 @@ func (s *Server) handleMessage(c *Client, message []byte) {
     defer s.mutex.Unlock()
 
     // 回答を追加
-    s.answers = append(s.answers, receivedMessage)
     log.Printf("Received message from client %s: %s", c.conn.RemoteAddr().String(), message)
 	s.answersPerRoom[c.RoomLevel][c.SecretWord][c] = receivedMessage
     // すべての回答が揃ったかチェック

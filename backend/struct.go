@@ -20,7 +20,6 @@ type Server struct {
     register   chan *Client
     unregister chan *Client
     mutex      sync.Mutex
-	answers []AnswerMessage
 	answersPerRoom map[int]map[string]map[*Client]AnswerMessage
 	expectedAnswerCount int
 	secretWordQueues map[int]map[string][]*Client

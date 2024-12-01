@@ -8,7 +8,6 @@ func NewServer() *Server {
         broadcast:  make(chan string),
         register:   make(chan *Client),
         unregister: make(chan *Client),
-		answers: make([]AnswerMessage,0),
 		answersPerRoom: make(map[int]map[string]map[*Client]AnswerMessage),
 		secretWordQueues: make(map[int]map[string][]*Client),
 		expectedAnswerCount: 2,
