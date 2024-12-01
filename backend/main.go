@@ -17,16 +17,17 @@ var upgrader = websocket.Upgrader{
         return true
     },
 }
-func doesStringExist(secretWordQueues map[int]map[string][]*Client, target string) bool {
-    for _, innerMap := range secretWordQueues {
-        if _, exists := innerMap[target]; exists {
-			if len(innerMap[target]) == 2 {
-            return true // 見つかった場合
-			}
+func doesStringExist(secretWordQueues map[int]map[string][]*Client, target string, level int) bool {
+    // 指定された level が存在するかをチェック
+    if innerMap, exists := secretWordQueues[level]; exists {
+        // target が innerMap に存在し、対応するスライスの長さが 2 であるかを判定
+        if clients, ok := innerMap[target]; ok && len(clients) == 2 {
+            return true
         }
     }
-    return false // 見つからなかった場合
+    return false
 }
+
 
 func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
     conn, err := upgrader.Upgrade(w, r, nil)
@@ -44,7 +45,16 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error unmarshalling message: %v", err)
 		return
 	}
-	if doesStringExist(server.secretWordQueues, registerMessage.Data.SecretWord) {
+	if doesStringExist(server.secretWordQueues, registerMessage.Data.SecretWord, registerMessage.Data.Level) {
+		var msg ClientSendMessage
+		msg.Signal = "alreadyExist"
+		msg.Word = "すでに同じワードが存在します"
+		msgJson, err := json.Marshal(msg)
+		if err != nil {
+			log.Printf("Error marshalling message: %v", err)
+			return
+		}
+		conn.WriteMessage(websocket.TextMessage, []byte(msgJson))
 		log.Printf("SecretWord already exists")
 		return
 	}
