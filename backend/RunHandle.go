@@ -80,7 +80,7 @@ func (s *Server) handleUnregister(client *Client) {
 	if len(s.secretWordQueues[client.RoomLevel][client.SecretWord]) == 2 {
 		log.Printf("user exit function called\n")
 		msg.Signal = "userLeft"
-		// msg.Word = "相手が退出しました"
+		msg.Word = "相手が退出しました"
 		msgJson, err := json.Marshal(msg)
 		if err != nil {
 			log.Printf("Error marshalling message: %v", err)
