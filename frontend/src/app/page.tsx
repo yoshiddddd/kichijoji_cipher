@@ -63,6 +63,10 @@ export default function Home() {
         alert("すでに同じ合言葉が存在します。名前を変更してください。");
         window.location.reload();
       }
+      if(data.signal === "userLeft"){
+        alert("相手が退出しました.");
+        window.location.reload();
+      }
     };
 
     newSocket.onclose = () => {
