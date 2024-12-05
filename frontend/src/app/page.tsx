@@ -47,6 +47,10 @@ export default function Home() {
       console.log(data);
 
       console.log("Received message:", event.data);
+      if(data.signal === "userLeft"){
+        alert("相手が退出しました.");
+        window.location.reload();
+    }
       if (data.signal === "start") {
         setStart(true);
         setMessage("二人のユーザーが接続しました！ゲーム開始！");
@@ -61,10 +65,6 @@ export default function Home() {
       }
       if(data.signal === "alreadyExist"){
         alert("すでに同じ合言葉が存在します。名前を変更してください。");
-        window.location.reload();
-      }
-      if(data.signal === "userLeft"){
-        alert("相手が退出しました.");
         window.location.reload();
       }
     };
