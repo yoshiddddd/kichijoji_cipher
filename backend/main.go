@@ -74,22 +74,50 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
     go client.readPump(server)
 }
 
+
 func main() {
+    // PORT環境変数からポートを取得。未設定時は8080を使用
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
+    }
+
     server := NewServer()
     go server.run()
 
     // 静的ファイルの提供
     http.Handle("/", http.FileServer(http.Dir("static")))
-    
+
     // WebSocketエンドポイント
     http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
         serveWs(server, w, r)
     })
 
     // サーバー起動
-    log.Printf("Server starting on :8080")
-    err := http.ListenAndServe(":8080", nil)
+    addr := ":" + port
+    log.Printf("Server starting on %s", addr)
+    err := http.ListenAndServe(addr, nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
     }
 }
+
+// func main() {
+//     server := NewServer()
+//     go server.run()
+
+//     // 静的ファイルの提供
+//     http.Handle("/", http.FileServer(http.Dir("static")))
+    
+//     // WebSocketエンドポイント
+//     http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+//         serveWs(server, w, r)
+//     })
+
+//     // サーバー起動
+//     log.Printf("Server starting on :8080")
+//     err := http.ListenAndServe(":8080", nil)
+//     if err != nil {
+//         log.Fatal("ListenAndServe: ", err)
+//     }
+// }
