@@ -13,8 +13,11 @@ export default function Home() {
   const [clientId, setClientId] = useState("");
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [name, setName] = useState(() => {
-    const savedName = localStorage.getItem("userName");
-    return savedName || "";
+    if (typeof window !== "undefined") {
+      const savedName = localStorage.getItem("userName");
+      return savedName || "";
+    }
+    return "";
   });
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(false);
@@ -74,7 +77,7 @@ export default function Home() {
     };
 
     // 名前をローカルストレージに保存
-    if (name) {
+    if (typeof window !== "undefined" && name) {
       localStorage.setItem("userName", name);
     }
 
@@ -179,7 +182,7 @@ export default function Home() {
               />
               <input
                 type="text"
-                placeholder="合言葉を入力してください"
+                placeholder="合言葉を入力してください。"
                 value={secretWord}
                 onChange={(e) => setSecretWord(e.target.value)}
                 style={{
