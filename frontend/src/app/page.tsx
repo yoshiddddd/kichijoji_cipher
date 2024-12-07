@@ -29,7 +29,9 @@ export default function Home() {
   };
 
   const handleStartGame = () => {
-    const newSocket = new WebSocket("ws://localhost:8080/ws");
+    const newSocket = new WebSocket(
+      "wss://kichijoji-cipher-be-deploy.onrender.com/ws"
+    );
     setSocket(newSocket);
     socketRef.current = newSocket;
 
