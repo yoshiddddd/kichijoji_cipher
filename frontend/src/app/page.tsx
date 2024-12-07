@@ -26,7 +26,6 @@ export default function Home() {
   };
 
   const handleStartGame = () => {
-
     const newSocket = new WebSocket("ws://localhost:8080/ws");
     setSocket(newSocket);
     socketRef.current = newSocket;
@@ -36,7 +35,7 @@ export default function Home() {
       console.log("Connected to server");
       setMessage("ユーザーを探しています...");
       newSocket.send(
-        JSON.stringify({ type: "start", data: { roomLevel, name ,secretWord} })
+        JSON.stringify({ type: "start", data: { roomLevel, name, secretWord } })
       );
     };
 
@@ -47,10 +46,10 @@ export default function Home() {
       console.log(data);
 
       console.log("Received message:", event.data);
-      if(data.signal === "userLeft"){
+      if (data.signal === "userLeft") {
         alert("相手が退出しました.");
         window.location.reload();
-    }
+      }
       if (data.signal === "start") {
         setStart(true);
         setMessage("二人のユーザーが接続しました！ゲーム開始！");
@@ -63,7 +62,7 @@ export default function Home() {
         setResult(true);
         newSocket.close();
       }
-      if(data.signal === "alreadyExist"){
+      if (data.signal === "alreadyExist") {
         alert("すでに同じ合言葉が存在します。名前を変更してください。");
         window.location.reload();
       }
@@ -84,15 +83,14 @@ export default function Home() {
       alert("名前を入力してください");
       return;
     }
-    if(!secretWord){
-        alert("合言葉を入力してください");
-        return;
+    if (!secretWord) {
+      alert("合言葉を入力してください");
+      return;
     }
     if (!roomLevel) {
       alert("レベルを選択してください");
       return;
     }
-   
   };
 
   const handleReset = () => {
@@ -181,10 +179,19 @@ export default function Home() {
               />
               <input
                 type="text"
-                placeholder="合言葉を入力してください。"
+                placeholder="合言葉を入力してください"
                 value={secretWord}
                 onChange={(e) => setSecretWord(e.target.value)}
-               />
+                style={{
+                  padding: "12px 20px",
+                  fontSize: "1rem",
+                  borderRadius: "8px",
+                  border: "2px solid #ddd",
+                  width: "300px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                }}
+              />
               <div style={{ margin: "20px 0" }}>
                 <DifficultyLevelButton
                   label="初級"
