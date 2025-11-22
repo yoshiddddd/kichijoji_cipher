@@ -34,10 +34,18 @@ const Result = ({ name, gameResult }: ResultProps) => {
   } = gameResult;
 
   return (
-    <div style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "0 15px",
+        boxSizing: "border-box",
+      }}
+    >
       <h1
         style={{
-          fontSize: "2.5rem",
+          fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
           color: "#333",
           marginBottom: "30px",
           textAlign: "center",
@@ -102,14 +110,14 @@ const Result = ({ name, gameResult }: ResultProps) => {
           {/* User 1 Card */}
           <div
             style={{
-              flex: 1,
-              minWidth: "300px",
+              flex: "1 1 300px",
               padding: "20px",
               border: "2px solid #ddd",
               borderRadius: "12px",
               backgroundColor: user1Name === winner ? "#e8f5e9" : "#fff",
               boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
               borderColor: user1Name === winner ? "#4CAF50" : "#ddd",
+              boxSizing: "border-box",
             }}
           >
             <h3
@@ -171,14 +179,14 @@ const Result = ({ name, gameResult }: ResultProps) => {
           {/* User 2 Card */}
           <div
             style={{
-              flex: 1,
-              minWidth: "300px",
+              flex: "1 1 300px",
               padding: "20px",
               border: "2px solid #ddd",
               borderRadius: "12px",
               backgroundColor: user2Name === winner ? "#e8f5e9" : "#fff",
               boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
               borderColor: user2Name === winner ? "#4CAF50" : "#ddd",
+              boxSizing: "border-box",
             }}
           >
             <h3
