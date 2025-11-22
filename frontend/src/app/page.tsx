@@ -201,7 +201,7 @@ export default function Home() {
                 height: "auto",
                 borderRadius: "12px",
                 boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-                animation: "spin 10s linear infinite",
+                animation: "sway 2s ease-in-out infinite",
               }}
               priority
             />
@@ -229,12 +229,15 @@ export default function Home() {
                 opacity: 1;
               }
             }
-            @keyframes spin {
-              from {
-                transform: rotate(0deg);
+            @keyframes sway {
+              0% {
+                transform: translateX(-10px);
               }
-              to {
-                transform: rotate(360deg);
+              50% {
+                transform: translateX(10px);
+              }
+              100% {
+                transform: translateX(-10px);
               }
             }
           `}</style>
