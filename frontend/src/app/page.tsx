@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "../components/countdown";
 import DifficultyLevelButton from "@/components/DifficultyLevelButton";
-import Result from "@/components/Result";
+import Result, { ResultData } from "@/components/Result";
 
 export default function Home() {
   const [message, setMessage] = useState("レベルを選択してバトル準備");
@@ -23,6 +23,7 @@ export default function Home() {
   const [result, setResult] = useState(false);
   const [roomLevel, setRoomLevel] = useState(0);
   const [secretWord, setSecretWord] = useState("");
+  const [gameResult, setGameResult] = useState<ResultData | null>(null);
 
   const changeRoomLevel = (level: number) => {
     setRoomLevel(level);
@@ -65,6 +66,48 @@ export default function Home() {
       if (data.signal === "result") {
         setThinking(false);
         setResult(true);
+
+        // data.word がJSON文字列になっているためパースする
+        try {
+          const innerData = JSON.parse(data.word);
+          console.log("Parsed innerData:", innerData);
+
+          // Difyのレスポンス形式（動的キー）に合わせて整形
+          const formattedResult: ResultData = {
+            clientId: data.clientId,
+            signal: data.signal,
+            word: data.word,
+            winner: innerData.winner || "",
+            user1Name: innerData.user1name || "",
+            user2Name: innerData.user2name || "",
+            // 動的キー（名前_answer）から値を取得
+            user1_answer:
+              innerData[`${innerData.user1name}_answer`] ||
+              innerData.user1_answer ||
+              "",
+            user2_answer:
+              innerData[`${innerData.user2name}_answer`] ||
+              innerData.user2_answer ||
+              "",
+            // 動的キー（名前_point）から値を取得
+            user1_point:
+              innerData[`${innerData.user1name}_point`] ||
+              innerData.user1_point ||
+              0,
+            user2_point:
+              innerData[`${innerData.user2name}_point`] ||
+              innerData.user2_point ||
+              0,
+            feedback: innerData.feedback || "",
+          };
+
+          setGameResult(formattedResult);
+        } catch (e) {
+          console.error("Failed to parse result word:", e);
+          // パース失敗時はそのままdataを入れる（あるいはエラー表示）
+          setGameResult(data);
+        }
+
         newSocket.close();
       }
       if (data.signal === "alreadyExist") {
@@ -123,9 +166,9 @@ export default function Home() {
     >
       {thinking ? (
         <h1>AIがジャッジしています...</h1>
-      ) : result ? (
+      ) : result && gameResult ? (
         <div>
-          <Result keyword={keyword} name={name} />
+          <Result name={name} gameResult={gameResult} />
           <button
             onClick={handleReset}
             style={{
