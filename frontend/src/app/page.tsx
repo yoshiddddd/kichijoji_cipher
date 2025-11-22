@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Countdown } from "../components/countdown";
 import DifficultyLevelButton from "@/components/DifficultyLevelButton";
 import Result, { ResultData } from "@/components/Result";
+import { TutorialModal } from "@/components/TutorialModal";
 
 export default function Home() {
   const [message, setMessage] = useState("レベルを選択してバトル準備");
@@ -12,6 +13,8 @@ export default function Home() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [clientId, setClientId] = useState("");
   const [isGameStarted, setIsGameStarted] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true); // 初期表示でチュートリアルを出す
+
   const [name, setName] = useState(() => {
     if (typeof window !== "undefined") {
       const savedName = localStorage.getItem("userName");
@@ -141,6 +144,10 @@ export default function Home() {
     }
   };
 
+  const handleTutorialClose = () => {
+    setShowTutorial(false);
+  };
+
   const handleReset = () => {
     window.location.reload();
   };
@@ -196,6 +203,7 @@ export default function Home() {
         />
       ) : (
         <div>
+          {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
           <p
             style={{ fontSize: "1.2rem", color: "black", marginBottom: "20px" }}
           >
