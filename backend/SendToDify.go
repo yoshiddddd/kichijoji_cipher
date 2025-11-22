@@ -3,18 +3,18 @@ import(
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	// "log"
 	"net/http"
 	"os"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 	"bytes"
 )
 func sendToDify(answers map[*Client]AnswerMessage) (string, error) {
 	
-	err := godotenv.Load()
-    if err != nil {
-        log.Fatalf(".envファイルの読み込みに失敗しました: %v", err)
-    }
+	// err := godotenv.Load()
+    // if err != nil {
+    //     log.Fatalf(".envファイルの読み込みに失敗しました: %v", err)
+    // }
     token := os.Getenv("DIFY_APIKEY")
     fmt.Println(token)
 
