@@ -1,15 +1,18 @@
 package main
-import(
+
+import (
 	"encoding/json"
 	"fmt"
 	"io"
+
 	// "log"
 	"net/http"
 	"os"
+
 	// "github.com/joho/godotenv"
 	"bytes"
 )
-func sendToDify(answers map[*Client]AnswerMessage) (string, error) {
+func sendToDify(answers map[*Client]AnswerMessage) (DifyResponse, error) {
 	
 	// err := godotenv.Load()
     // if err != nil {
@@ -26,7 +29,7 @@ func sendToDify(answers map[*Client]AnswerMessage) (string, error) {
 
     // AnswerMessage が2つあることを確認
     if len(data) < 2 {
-        return "", fmt.Errorf("AnswerMessage が2つ必要ですが、%d つしかありません", len(data))
+        return DifyResponse{}, fmt.Errorf("AnswerMessage が2つ必要ですが、%d つしかありません", len(data))
     }
 
     // 送信するクエリの内容を作成
@@ -53,12 +56,12 @@ func sendToDify(answers map[*Client]AnswerMessage) (string, error) {
 	requestBody, err := json.Marshal(payload)
 	// requestBody, err := json.Marshal(data)
     if err != nil {
-        return "",fmt.Errorf("error encoding data to JSON: %v", err)
+        return DifyResponse{},fmt.Errorf("error encoding data to JSON: %v", err)
     }
 
     req, err := http.NewRequest("POST", "https://api.dify.ai/v1/chat-messages", bytes.NewBuffer(requestBody))
     if err != nil {
-        return "",fmt.Errorf("error creating HTTP request: %v", err)
+        return DifyResponse{},fmt.Errorf("error creating HTTP request: %v", err)
     }
     req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
     req.Header.Set("Content-Type", "application/json")
@@ -66,22 +69,22 @@ func sendToDify(answers map[*Client]AnswerMessage) (string, error) {
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-        return "",fmt.Errorf("error sending request to Dify: %v", err)
+        return DifyResponse{},fmt.Errorf("error sending request to Dify: %v", err)
     }
     defer resp.Body.Close()
 
     if resp.StatusCode != http.StatusOK {
-        return "",fmt.Errorf("failed to send data to Dify, status code: %d", resp.StatusCode)
+        return DifyResponse{},fmt.Errorf("failed to send data to Dify, status code: %d", resp.StatusCode)
     }
     body, err := io.ReadAll(resp.Body)
     if err != nil {
-        return "",fmt.Errorf("error reading response body: %v", err)
+        return DifyResponse{},fmt.Errorf("error reading response body: %v", err)
     }
 	var difyResponse DifyResponse
     if err := json.Unmarshal(body, &difyResponse); err != nil {
-        return "",fmt.Errorf("error unmarshalling response: %v", err)
+        return DifyResponse{},fmt.Errorf("error unmarshalling response: %v", err)
     }
 
     // `answer`フィールドの確認とログ出力
-    return  difyResponse.Answer,nil
+    return  difyResponse,nil
 }

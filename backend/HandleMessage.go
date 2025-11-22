@@ -45,17 +45,25 @@ func (s *Server) processAnswers(c *Client) {
     // AIへのリクエストを行う
 		//同時リクエストに対する排他制御
     // answer, err := sendToDify(s.answers)
-    answer, err := sendToDify(s.answersPerRoom[c.RoomLevel][c.SecretWord])
+    difyResponse, err := sendToDify(s.answersPerRoom[c.RoomLevel][c.SecretWord])
     if err != nil {
         log.Printf("Error sending data to Dify: %v", err)
         return
     }
-    log.Printf("Answer from Dify: %s", answer)
+    log.Printf("Answer from Dify: %s", difyResponse.Answer)
 
     // クライアントに結果を送信
     s.broadcastToClients(ResultSendMessage{
-        Signal: "result",
-        Word:   answer,
+        Signal:      "result",
+        Word:        difyResponse.Answer,
+        Winner:      difyResponse.Winner,
+        User1Name:   difyResponse.User1Name,
+        User2Name:   difyResponse.User2Name,
+        User1Answer: difyResponse.User1Answer,
+        User2Answer: difyResponse.User2Answer,
+        User1Point:  difyResponse.User1Point,
+        User2Point:  difyResponse.User2Point,
+        Feedback:    difyResponse.Feedback,
     }, c)
 
     // 回答リストをクリア
