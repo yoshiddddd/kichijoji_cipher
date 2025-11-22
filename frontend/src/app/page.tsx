@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Countdown } from "../components/countdown";
 import DifficultyLevelButton from "@/components/DifficultyLevelButton";
 import Result, { ResultData } from "@/components/Result";
@@ -172,7 +173,72 @@ export default function Home() {
       }}
     >
       {thinking ? (
-        <h1>AIがジャッジしています...</h1>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+            padding: "40px 20px",
+            flex: 1,
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "100%",
+              width: "min(300px, 80vw)",
+              marginBottom: "50px",
+            }}
+          >
+            <Image
+              src="/kichijoji-cipher-loading.jpg"
+              alt="AI Judging"
+              width={800}
+              height={600}
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: "12px",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                animation: "spin 10s linear infinite",
+              }}
+              priority
+            />
+          </div>
+          <h1
+            style={{
+              fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
+              textAlign: "center",
+              wordBreak: "keep-all",
+              animation: "pulse 2s infinite",
+              marginTop: "20px",
+            }}
+          >
+            AIがジャッジしています...
+          </h1>
+          <style jsx>{`
+            @keyframes pulse {
+              0% {
+                opacity: 1;
+              }
+              50% {
+                opacity: 0.6;
+              }
+              100% {
+                opacity: 1;
+              }
+            }
+            @keyframes spin {
+              from {
+                transform: rotate(0deg);
+              }
+              to {
+                transform: rotate(360deg);
+              }
+            }
+          `}</style>
+        </div>
       ) : result && gameResult ? (
         <div>
           <Result name={name} gameResult={gameResult} />
