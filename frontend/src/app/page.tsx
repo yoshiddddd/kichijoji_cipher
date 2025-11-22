@@ -179,14 +179,16 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-            padding: "0 20px",
+            padding: "40px 20px",
+            flex: 1,
+            justifyContent: "center",
           }}
         >
           <div
             style={{
               maxWidth: "100%",
-              width: "400px",
-              marginBottom: "30px",
+              width: "min(300px, 80vw)",
+              marginBottom: "50px",
             }}
           >
             <Image
@@ -210,6 +212,7 @@ export default function Home() {
               textAlign: "center",
               wordBreak: "keep-all",
               animation: "pulse 2s infinite",
+              marginTop: "20px",
             }}
           >
             AIがジャッジしています...
