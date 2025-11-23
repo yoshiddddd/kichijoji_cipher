@@ -192,7 +192,7 @@ export default function Home() {
             }}
           >
             <Image
-              src="/kichijoji-cipher-loading.jpg"
+              src="/kichijoji-cipher-loading.webp"
               alt="AI Judging"
               width={800}
               height={600}
