@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 export const ActionPage = ({
   keyword,
@@ -117,15 +118,53 @@ export const ActionPage = ({
         回答する
       </button>
       {isAnswered && (
-        <p
+        <div
           style={{
-            fontSize: "1.2rem",
-            color: "#718096",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             marginTop: "20px",
           }}
         >
-          相手の回答を待っています・・・
-        </p>
+          <div
+            style={{
+              width: "80px",
+              height: "80px",
+              marginBottom: "15px",
+            }}
+          >
+            <Image
+              src="/kichijoji-cipher-logo.webp"
+              alt="Loading"
+              width={100}
+              height={100}
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: "50%",
+                animation: "spin 2s linear infinite",
+              }}
+            />
+          </div>
+          <p
+            style={{
+              fontSize: "1.2rem",
+              color: "#718096",
+            }}
+          >
+            相手の回答を待っています・・・
+          </p>
+          <style jsx>{`
+            @keyframes spin {
+              from {
+                transform: rotate(0deg);
+              }
+              to {
+                transform: rotate(360deg);
+              }
+            }
+          `}</style>
+        </div>
       )}
     </div>
   );
